@@ -15,18 +15,6 @@ backward_functions = Dict{Tuple{Int, Int}, StochasticBackwardFunction}()
 for (i, edge) in enumerate(edges(g))
     forward_functions[src(edge), dst(edge)] = StochasticForwardFunction(slacks[i], delays[i, :])
     backward_functions[src(edge), dst(edge)] = StochasticBackwardFunction(slacks[i], delays[i, :])
-    # set_prop!(
-    #     g,
-    #     edge,
-    #     :forward_function,
-    #     StochasticForwardFunction(slacks[i], delays[i, :]),
-    # )
-    # set_prop!(
-    #     g,
-    #     edge,
-    #     :backward_function,
-    #     StochasticBackwardFunction(slacks[i], delays[i, :]),
-    # )
 end
 
 instance = RCSPProblem(g, origin_forward_resource, destination_backward_resource, cost, forward_functions, backward_functions)

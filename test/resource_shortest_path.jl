@@ -14,8 +14,6 @@
         add_edge!(graph, i, j)
         forward_functions[i, j] = CSPFunction(c, w)
         backward_functions[i, j] = CSPFunction(c, w)
-        # set_prop!(graph, i, j, :forward_function, CSPFunction(c, w))
-        # set_prop!(graph, i, j, :backward_function, CSPFunction(c, w))
     end
 
     origin_forward_resource = CSPResource(0., 0.)

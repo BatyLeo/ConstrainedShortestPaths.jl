@@ -12,10 +12,6 @@
             [instance.backward_functions[vertex, neighbor](bounds[neighbor])
              for neighbor in outneighbors(graph, vertex)]
         )
-        # bounds[vertex] = minimum(
-        #     [get_prop(graph, vertex, neighbour, :backward_function)(bounds[neighbour])
-        #      for neighbour in outneighbors(graph, vertex)]
-        # )
     end
 
     return bounds
@@ -45,7 +41,6 @@ end
             push!(q, w)
             rp = forward_resources[p]
             rq = instance.forward_functions[v, w](rp)
-            #rq = get_prop(graph, v, w, :forward_function)(rp)
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
             if w == nb_vertices && c < c_star
