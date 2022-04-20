@@ -3,6 +3,11 @@ uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
 authors = ["BatyLeo <leo.baty67@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
+
 [compat]
 julia = "1.7"
 
