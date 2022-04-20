@@ -8,22 +8,16 @@
     origin_forward_resource = 0.0
     destination_backward_resource = 0.0
 
+    forward_functions = Dict{Tuple{Int, Int}, ShortestPathExpansionFunction}()
+    backward_functions = Dict{Tuple{Int, Int}, ShortestPathExpansionFunction}()
+
     for (i, edge) in enumerate(edges(g))
-        set_prop!(
-            g,
-            edge,
-            :forward_function,
-            ShortestPathExpansionFunction(1.0),
-        )
-        set_prop!(
-            g,
-            edge,
-            :backward_function,
-            ShortestPathExpansionFunction(1.0),
-        )
+        forward_functions[src(edge), dst(edge)] = ShortestPathExpansionFunction(1.0)
+        backward_functions[src(edge), dst(edge)] = ShortestPathExpansionFunction(1.0)
     end
 
-    instance = RCSPProblem(g, origin_forward_resource, destination_backward_resource, cost)
+    instance = RCSPProblem(g, origin_forward_resource, destination_backward_resource, cost,
+        forward_functions, backward_functions)
 
     bounds = compute_bounds(instance)
     @info "Bounds" bounds
@@ -41,16 +35,18 @@ end
     edges = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
     weights = [1., 2., -1., 1., 1.]
 
+    forward_functions = Dict{Tuple{Int, Int}, ShortestPathExpansionFunction}()
+    backward_functions = Dict{Tuple{Int, Int}, ShortestPathExpansionFunction}()
     for ((i, j), w) in zip(edges, weights)
         add_edge!(graph, i, j)
-        set_prop!(graph, i, j, :forward_function, ShortestPathExpansionFunction(w))
-        set_prop!(graph, i, j, :backward_function, ShortestPathExpansionFunction(w))
+        forward_functions[i, j] = ShortestPathExpansionFunction(w)
+        backward_functions[i, j] = ShortestPathExpansionFunction(w)
     end
 
     origin_forward_resource = 0.0
     destination_backward_resource = 0.0
 
-    instance = RCSPProblem(graph, origin_forward_resource, destination_backward_resource, cost)
+    instance = RCSPProblem(graph, origin_forward_resource, destination_backward_resource, cost, forward_functions, backward_functions)
 
     bounds = compute_bounds(instance)
     @info "Bounds" bounds

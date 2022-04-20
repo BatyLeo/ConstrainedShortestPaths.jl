@@ -1,14 +1,16 @@
 module RCSP
 
-using Graphs, MetaGraphs
+using SimpleTraits
+using Graphs
 using DataStructures
 import Base: <=, minimum
 
+include("utils.jl")
+include("RCSPProblem.jl")
+include("algorithms.jl")
 include("shortest_path.jl")
 include("resource_shortest_path.jl")
 include("stochastic_routing.jl")
-include("RCSPProblem.jl")
-include("algorithms.jl")
 
 export ShortestPathExpansionFunction
 export StochasticBackwardFunction, StochasticBackwardResource

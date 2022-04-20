@@ -7,7 +7,7 @@ using Graphs, MetaGraphs
     @testset "Shortest Path" begin
         include("shortest_path.jl")
     end
-    
+
     @testset "Resource Constrained Shortest Path" begin
         include("resource_shortest_path.jl")
     end

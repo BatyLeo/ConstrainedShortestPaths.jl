@@ -1,22 +1,6 @@
-function scan!(graph::MetaDiGraph, vertex::Int, order::Vector{Int}, opened::BitVector)
-    opened[vertex] = true
-    for neighbour in outneighbors(graph, vertex)
-        if opened[neighbour]
-            continue
-        end
-        scan!(graph, neighbour, order, opened)
-    end
-    push!(order, vertex)
-end
-
-function topological_order(graph::MetaDiGraph)
-    order = Int[]
-    opened = falses(nv(graph))
-    scan!(graph, 1, order, opened)
-    return order
-end
-
-function compute_bounds(instance::RCSPProblem)
+@traitfn function compute_bounds(
+    instance::RCSPProblem{G}
+) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(instance.graph)
 
@@ -25,15 +9,21 @@ function compute_bounds(instance::RCSPProblem)
     bounds = [instance.destination_backward_resource for _ = 1:nb_vertices]
     for vertex in vertices_order[2:end]
         bounds[vertex] = minimum(
-            [get_prop(graph, vertex, neighbour, :backward_function)(bounds[neighbour])
-             for neighbour in outneighbors(graph, vertex)]
+            [instance.backward_functions[vertex, neighbor](bounds[neighbor])
+             for neighbor in outneighbors(graph, vertex)]
         )
+        # bounds[vertex] = minimum(
+        #     [get_prop(graph, vertex, neighbour, :backward_function)(bounds[neighbour])
+        #      for neighbour in outneighbors(graph, vertex)]
+        # )
     end
 
     return bounds
 end
 
-function generalized_A_star(instance::RCSPProblem, bounds::Vector)
+@traitfn function generalized_A_star(
+    instance::RCSPProblem{G}, bounds::AbstractVector
+) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(graph)
 
@@ -54,7 +44,8 @@ function generalized_A_star(instance::RCSPProblem, bounds::Vector)
             q = copy(p)
             push!(q, w)
             rp = forward_resources[p]
-            rq = get_prop(graph, v, w, :forward_function)(rp)
+            rq = instance.forward_functions[v, w](rp)
+            #rq = get_prop(graph, v, w, :forward_function)(rp)
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
             if w == nb_vertices && c < c_star
