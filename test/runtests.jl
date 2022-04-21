@@ -1,18 +1,15 @@
 using RCSP
 using Test
 
-using Graphs, MetaGraphs
+using Graphs
+using SparseArrays
 
 @testset verbose=true "RCSP.jl" begin
-    @testset "Shortest Path" begin
-        include("shortest_path.jl")
+    @testset "Basic Shortest Path" begin
+        include("basic_shortest_path.jl")
     end
 
-    @testset "Resource Constrained Shortest Path" begin
+    @testset "Resource Shortest Path" begin
         include("resource_shortest_path.jl")
-    end
-
-    @testset "Stochastic routing" begin
-        #include("stochastic_routing.jl")
     end
 end

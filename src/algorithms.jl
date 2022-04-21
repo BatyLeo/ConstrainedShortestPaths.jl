@@ -1,5 +1,5 @@
 @traitfn function compute_bounds(
-    instance::RCSPProblem{G}
+    instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(instance.graph)
@@ -18,7 +18,7 @@
 end
 
 @traitfn function generalized_A_star(
-    instance::RCSPProblem{G}, bounds::AbstractVector
+    instance::RCSPInstance{G}, bounds::AbstractVector
 ) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(graph)
@@ -54,4 +54,10 @@ end
         end
     end
     return p_star, c_star
+end
+
+@traitfn function generalized_constrained_shortest_path(
+    instance::RCSPInstance{G}
+) where {G <: AbstractGraph; IsDirected{G}}
+    return generalized_A_star(instance, compute_bounds(instance))
 end

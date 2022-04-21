@@ -4,19 +4,16 @@ using SimpleTraits
 using Graphs
 using DataStructures
 import Base: <=, minimum
+using SparseArrays
 
 include("utils.jl")
-include("RCSPProblem.jl")
+include("instance.jl")
 include("algorithms.jl")
-include("shortest_path.jl")
-include("resource_shortest_path.jl")
-include("stochastic_routing.jl")
+include("examples/basic_shortest_path.jl")
+include("examples/resource_shortest_path.jl")
 
-export ShortestPathExpansionFunction
-export StochasticBackwardFunction, StochasticBackwardResource
-export StochasticForwardFunction, StochasticForwardResource
-export CSPFunction, CSPResource, CSPCost
-export cost
+export basic_shortest_path, resource_shortest_path
+export generalized_constrained_shortest_path
+export RCSPInstance
 
-export RCSPProblem, compute_bounds, generalized_A_star
 end
