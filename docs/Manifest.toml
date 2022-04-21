@@ -33,6 +33,14 @@ version = "3.43.0"
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
+[[deps.ConstrainedShortestPaths]]
+deps = ["DataStructures", "Graphs", "SimpleTraits", "SparseArrays"]
+git-tree-sha1 = "e6356471357dc0f01c44d482a0f7ddd6465e2738"
+repo-rev = "main"
+repo-url = "git@github.com:BatyLeo/ConstrainedShortestPaths.jl.git"
+uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
+version = "0.1.0"
+
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "3daef5523dd2e769dad2365274f760ff5f282c7d"
@@ -165,12 +173,6 @@ uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 [[deps.Printf]]
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-
-[[deps.RCSP]]
-deps = ["DataStructures", "Graphs", "SimpleTraits", "SparseArrays"]
-path = ".."
-uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
-version = "0.1.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]

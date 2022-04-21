@@ -1,4 +1,4 @@
-module RCSP
+module ConstrainedShortestPaths
 
 using SimpleTraits
 using Graphs

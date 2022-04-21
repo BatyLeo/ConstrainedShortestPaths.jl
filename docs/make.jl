@@ -1,16 +1,16 @@
-using RCSP
+using ConstrainedShortestPaths
 using Documenter
 
-DocMeta.setdocmeta!(RCSP, :DocTestSetup, :(using RCSP); recursive=true)
+DocMeta.setdocmeta!(ConstrainedShortestPaths, :DocTestSetup, :(using ConstrainedShortestPaths); recursive=true)
 
 makedocs(;
-    modules=[RCSP],
-    authors="BatyLeo <leo.baty67@gmail.com> and contributors",
-    repo="https://github.com/BatyLeo/RCSP.jl/blob/{commit}{path}#{line}",
-    sitename="RCSP.jl",
+    modules=[ConstrainedShortestPaths],
+    authors="BatyLeo and contributors",
+    repo="https://github.com/BatyLeo/ConstrainedShortestPaths.jl/blob/{commit}{path}#{line}",
+    sitename="ConstrainedShortestPaths.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://BatyLeo.github.io/RCSP.jl",
+        canonical="https://BatyLeo.github.io/ConstrainedShortestPaths.jl",
         assets=String[],
     ),
     pages=[
@@ -19,6 +19,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/BatyLeo/RCSP.jl",
+    repo="github.com/BatyLeo/ConstrainedShortestPaths.jl",
     devbranch="main",
 )

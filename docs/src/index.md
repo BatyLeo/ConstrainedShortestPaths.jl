@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = RCSP
+CurrentModule = ConstrainedShortestPaths
 ```
 
-# RCSP
+# ConstrainedShortestPaths
 
-Documentation for [RCSP](https://github.com/BatyLeo/RCSP.jl).
+Documentation for [ConstrainedShortestPaths](https://github.com/BatyLeo/ConstrainedShortestPaths.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [RCSP]
+Modules = [ConstrainedShortestPaths]
 ```
