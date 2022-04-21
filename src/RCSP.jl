@@ -11,6 +11,7 @@ include("instance.jl")
 include("algorithms.jl")
 include("examples/basic_shortest_path.jl")
 include("examples/resource_shortest_path.jl")
+include("examples/stochastic_routing.jl")
 
 export basic_shortest_path, resource_shortest_path
 export generalized_constrained_shortest_path

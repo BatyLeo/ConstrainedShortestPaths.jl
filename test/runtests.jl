@@ -12,4 +12,8 @@ using SparseArrays
     @testset "Resource Shortest Path" begin
         include("resource_shortest_path.jl")
     end
+
+    @testset "Stochastic routing" begin
+        #include("stochastic_routing.jl")
+    end
 end
