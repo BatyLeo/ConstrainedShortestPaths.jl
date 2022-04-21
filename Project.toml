@@ -10,6 +10,7 @@ MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 SimpleTraits = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
 
 [compat]
+SimpleTraits = "0.9"
 julia = "1.7"
 
 [extras]
