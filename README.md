@@ -11,6 +11,8 @@ This package implements general algorithms for solving Generalized Resource Cons
 
 It implements a simplified version of the framework from [Parmentier 2017](https://arxiv.org/abs/1504.07880), restricted to acyclic directed graphs.
 
+See the [documentation](https://batyleo.github.io/ConstrainedShortestPaths.jl) for more details.
+
 ## Getting started
 
 To install this package, open a julia Pkg REPL and run the following command:
