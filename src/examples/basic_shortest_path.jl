@@ -1,10 +1,10 @@
 const BSPResource = Float64
 
-struct BSPExpansionFunction
+struct BSPExtensionFunction
     c::BSPResource
 end
 
-function (f::BSPExpansionFunction)(q::BSPResource)
+function (f::BSPExtensionFunction)(q::BSPResource)
     return f.c + q
 end
 
@@ -23,10 +23,10 @@ end
     # origin forward resource and backward forward resource set to 0
     resource = 0.0
 
-    # forward and backward expansion functions are equal
+    # forward and backward Extension functions are equal
     If = [src(e) for e in edges(g)]
     Jf = [dst(e) for e in edges(g)]
-    f = [BSPExpansionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
+    f = [BSPExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
     F = sparse(If, Jf, f)
 
     instance = RCSPInstance(g, resource, resource, BSP_cost, F, F)
