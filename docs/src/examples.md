@@ -1,4 +1,4 @@
-# Examples
+# Examples of applications
 
 ## Usual shortest path
 - ``q_o^F = 0,\, q^B_d = 0``

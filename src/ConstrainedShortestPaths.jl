@@ -14,6 +14,6 @@ include("examples/resource_shortest_path.jl")
 
 export basic_shortest_path, resource_shortest_path
 export generalized_constrained_shortest_path
-export RCSPInstance
+export RCSPInstance, remove_dominated!
 
 end

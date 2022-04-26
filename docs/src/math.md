@@ -54,7 +54,6 @@ We first assume that we have accesss to a lower bound ``b^B_v\in Q^B`` for every
   ```math
   \forall P = (R_1, R_2)\in \mathcal{P}_{od},\, c(q^F_{R_1}, b^B_v)\leq c_P
   ```
-  - Proof : ``b^B_v\leq^B q^B_{R_2} \implies c(q^F_{R_1}, b^B_v) \leq c(q^F_{R_1}, q^B_{R_2})`` par croissance de ``c``
 - Lemma 2 (**Dominance**) : if ``q^F_{R_1} \leq^F q^F_{R'_1}``, then for all ``R_2`` :
   ```math
   c(q^F_{R_1}, q^B_{R_2})\leq c(q^F_{R'_1}, q^B_{R_2})
