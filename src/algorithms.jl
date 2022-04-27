@@ -27,7 +27,9 @@ end
     empty_path = [origin]
 
     forward_resources = Dict(empty_path => instance.origin_forward_resource)
-    L = PriorityQueue{Vector{Int},Float64}(empty_path => instance.cost_function(forward_resources[empty_path], bounds[origin]))
+    L = PriorityQueue{Vector{Int},Float64}(
+        empty_path => instance.cost_function(forward_resources[empty_path], bounds[origin])
+    )
     M = [typeof(forward_resources[empty_path])[] for _ in 1:nb_vertices]
     push!(M[origin], forward_resources[empty_path])
     c_star = Inf
@@ -59,5 +61,6 @@ end
 @traitfn function generalized_constrained_shortest_path(
     instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
-    return generalized_A_star(instance, compute_bounds(instance))
+    bounds = compute_bounds(instance)
+    return generalized_A_star(instance, bounds)
 end

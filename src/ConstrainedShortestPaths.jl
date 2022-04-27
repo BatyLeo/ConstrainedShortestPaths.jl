@@ -1,4 +1,4 @@
-module RCSP
+module ConstrainedShortestPaths
 
 using SimpleTraits
 using Graphs
@@ -15,6 +15,6 @@ include("examples/stochastic_routing.jl")
 
 export basic_shortest_path, resource_shortest_path
 export generalized_constrained_shortest_path
-export RCSPInstance
+export RCSPInstance, remove_dominated!
 
 end

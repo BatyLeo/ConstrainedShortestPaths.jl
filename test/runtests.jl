@@ -1,4 +1,4 @@
-using RCSP
+using ConstrainedShortestPaths
 using Test
 
 using Graphs
