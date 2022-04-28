@@ -6,7 +6,7 @@ This page explains the mathematical framework used by `ConstrainedShortestPath.j
 
 ### Problem formulation
 
-Let ``D = (V, A)`` be an acyclic digraph. Let ``o, d`` two vertices, and ``\mathcal{P}_{od}`` the set of ``o-d`` path in ``D``. We want to find a path in ``P^\star \in\mathcal{P}_{od}`` minimizing a cost function ``P\mapsto c_P``:
+Let ``D = (V, A)`` be an acyclic digraph. Let ``o, d`` two vertices, and ``\mathcal{P}_{od}`` the set of ``o-d`` path in ``D``. We want to find a path ``P^\star \in\mathcal{P}_{od}`` minimizing a given cost function ``P\mapsto c_P``:
 ```math
 \boxed{\min_{P\in\mathcal{P}_{od}}c_P}
 ```
@@ -17,7 +17,8 @@ We define the two following set of resources:
 - Set of **forward resources** ``Q^F``, with a partial order ``\leq^F``
 - Set of **backward resources** ``Q^B``, with a partial order ``\leq^B``
 
-A partially ordered set ``(S,\leq)`` is a *lattice* if any pair ``s, s'\in S``, admits a greatest lower bound ``s\wedge s'``, i.e. ``\forall b,\, b\leq s\wedge s'``, ``b \leq s`` and ``b\leq s'``.
+A partially ordered set ``(S,\leq)`` is a *lattice* if any pair ``s, s'\in S``, admits a greatest lower bound ``s\wedge s'``, i.e. ``\forall b, s.t. 
+b \leq s`` and ``b\leq s',\, b\leq s\wedge s'``.
 
 ``(Q^F, \leq^F)`` and ``(Q^B, \leq^B)`` are *lattice*.
 
