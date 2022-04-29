@@ -5,13 +5,11 @@
     nb_vertices = nv(instance.graph)
 
     vertices_order = topological_order(graph)
-
     bounds = [instance.destination_backward_resource for _ = 1:nb_vertices]
     for vertex in vertices_order[2:end]
-        bounds[vertex] = minimum(
-            [instance.backward_functions[vertex, neighbor](bounds[neighbor])
-             for neighbor in outneighbors(graph, vertex)]
-        )
+        vector = [instance.backward_functions[vertex, neighbor](bounds[neighbor])
+            for neighbor in outneighbors(graph, vertex)]
+        bounds[vertex] = minimum(vector)
     end
 
     return bounds
@@ -55,7 +53,7 @@ end
             end
         end
     end
-    return p_star, c_star
+    return (p_star=p_star, c_star=c_star)
 end
 
 @traitfn function generalized_constrained_shortest_path(

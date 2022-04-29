@@ -34,17 +34,20 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     return StochasticForwardResource(new_c, new_xi)
 end
 
-struct StochasticBackwardResource{F}
-    g::Vector{F}
+struct StochasticBackwardResource
+    g::Vector{PiecewiseLinear}
 end
 
 function minimum(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
-    return [R -> min(g1(R), g2(R)) for (g1, g2) in zip(r1.g, r2.g)]
+    return [meet(g1, g2) for (g1, g2) in zip(r1.g, r2.g)]
 end
 
-function mini(r::Vector)
-    m = length(r[1].g)
-    return StochasticBackwardResource([R -> minimum(g.g[i](R) for g in r) for i in 1:m])
+function minimum(r::Vector{StochasticBackwardResource})
+    res = r[1]
+    for resource in r[2:end]
+        res = meet(res, resource)
+    end
+    return res
 end
 
 struct StochasticBackwardFunction
@@ -53,27 +56,13 @@ struct StochasticBackwardFunction
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
-    m = length(q.g)
     slack = f.slack
     return StochasticBackwardResource([
-        function (R::Float64)
-            raj = max(R - slack, 0) + delay
-            return raj + g(raj)
-        end for (delay, g) in zip(f.delays, q.g)
-    ])
+        PiecewiseLinear(1.0, [slack], [delay]) + compose(g, PiecewiseLinear(1.0, [slack], [delay]))
+    for (delay, g) in zip(f.delays, q.g)])
 end
 
-function cost(fr::StochasticForwardResource, br::StochasticBackwardResource)
+function stochastic_cost(fr::StochasticForwardResource, br::StochasticBackwardResource)
     m = length(fr.xi)
-    return fr.c + sum(gj[Rj] for (gj, Rj) in zip(br.g, fr.xi)) / m
-end
-
-function remove_dominated!(Mw::Vector{StochasticForwardResource}, rq::StochasticForwardResource)
-    to_delete = Int[]
-    for (i, r) in enumerate(Mw)
-        if rq <= r
-            push!(to_delete, i)
-        end
-    end
-    deleteat!(Mw, to_delete)
+    return fr.c + sum(gj(Rj) for (gj, Rj) in zip(br.g, fr.xi)) / m
 end

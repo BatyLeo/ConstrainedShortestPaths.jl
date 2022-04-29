@@ -27,4 +27,5 @@ m = meet(f1, f2)
 
 meet(f1, m)
 
-intersection(f1, m, 1, 1)
+intersection(f1, m, 1, 2)
+ 

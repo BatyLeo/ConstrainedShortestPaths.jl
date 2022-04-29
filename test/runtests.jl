@@ -14,6 +14,6 @@ using SparseArrays
     end
 
     @testset "Stochastic routing" begin
-        #include("stochastic_routing.jl")
+        include("stochastic_routing.jl")
     end
 end

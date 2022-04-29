@@ -46,6 +46,38 @@ function (f::PiecewiseLinear)(x::Real)
     return y1 + slope * (x - x1)
 end
 
+function +(f1::PiecewiseLinear, f2::PiecewiseLinear)
+    i1_max = length(f1.break_x)
+    i2_max = length(f2.break_x)
+
+    slope = f1.final_slope + f2.final_slope
+    x_list = Float64[]
+    y_list = Float64[]
+    i1, i2 = 1, 1
+    while i1 <= i1_max || i2 <= i2_max
+        x1 = get_x(f1, i1)
+        x2 = get_x(f2, i2)
+        if x1 < x2
+            y = f1(x1) + f2(x1)
+            push!(x_list, x1)
+            push!(y_list, y)
+            i1 += 1
+        elseif x1 > x2
+            y = f1(x2) + f2(x2)
+            push!(x_list, x2)
+            push!(y_list, y)
+            i2 += 2
+        else # if x1 == x2
+            y = f1(x1) + f2(x1)
+            push!(x_list, x1)
+            push!(y_list, y)
+            i1 += 1
+            i2 += 1
+        end
+    end
+    return PiecewiseLinear(slope, x_list, y_list)
+end
+
 """
     f1 ∘ f2
 
@@ -147,14 +179,14 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
             if x1 < x2
                 i1 += 1
                 y1, y2 = f1(x1), f2(x1)
-                if y1 <= y2
+                if y1 < y2
                     push!(x_list, x1)
                     push!(y_list, y1)
                 end
             elseif x1 > x2
                 i2 += 1
                 y1, y2 = f1(x2), f2(x2)
-                if y2 <= y1
+                if y2 < y1
                     push!(x_list, x2)
                     push!(y_list, y2)
                 end
@@ -177,10 +209,10 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
                 i1 += 1
                 y11, y21 = f1(x1), f2(x1)
                 y22 = f2(x2)
-                if y11 <= y21 && y11 <= y22
+                if y11 <= y21 && y11 <= y22 && x != x1
                     push!(x_list, x1)
                     push!(y_list, y11)
-                elseif y11 >= y21 && y11 >= y22
+                elseif y11 >= y21 && y11 >= y22 && x != x1
                     push!(x_list, x2)
                     push!(y_list, y22)
                 end
@@ -188,20 +220,23 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
                 i2 += 1
                 y12, y22 = f1(x2), f2(x2)
                 y21 = f1(x1)
-                if y22 <= y12 && y22 <= y21
+                if y22 <= y12 && y22 <= y21 && x != x1
                     push!(x_list, x2)
                     push!(y_list, y22)
-                elseif y22 >= y12 && y22 >= y21
+                elseif y22 >= y12 && y22 >= y21 && x != x1
                     push!(x_list, x1)
                     push!(y_list, y21)
                 end
             else # if x1 == x2
                 i1 += 1
                 i2 += 1
-                x = get_x(f1, i1)
-                y = min(f1(x), f2(x))
-                push!(x_list, x)
-                push!(y_list, y)
+
+                x1 = get_x(f1, i1)
+                if x1 != x
+                    y = min(f1(x), f2(x))
+                    push!(x_list, x)
+                   push!(y_list, y)
+                end
             end
         end
     end
