@@ -6,7 +6,7 @@ using SparseArrays
 using DataStructures
 import Base: <=, minimum, +
 
-export basic_shortest_path, resource_shortest_path
+export basic_shortest_path, resource_shortest_path, stochastic_routing_shortest_path
 export generalized_constrained_shortest_path, compute_bounds, generalized_A_star
 export RCSPInstance, remove_dominated!
 export PiecewiseLinear, compose, intersection, meet

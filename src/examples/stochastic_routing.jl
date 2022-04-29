@@ -66,3 +66,33 @@ function stochastic_cost(fr::StochasticForwardResource, br::StochasticBackwardRe
     m = length(fr.xi)
     return fr.c + sum(gj(Rj) for (gj, Rj) in zip(br.g, fr.xi)) / m
 end
+
+## General wrapper
+
+"""
+    stochastic_routing_shortest_path(g, slacks, delays)
+
+Args:
+- g: acyclic directed graph
+- slacks: [i, j]
+- delays: [i, ω]
+"""
+@traitfn function stochastic_routing_shortest_path(
+    g::G, slacks::AbstractMatrix, delays::AbstractMatrix
+) where {G <: AbstractGraph; IsDirected{G}}
+    nb_scenarios = size(delays, 2)
+
+    origin_forward_resource = StochasticForwardResource(0.0, [0.0 for _ = 1:nb_scenarios])
+    destination_backward_resource = StochasticBackwardResource([PiecewiseLinear() for _ = 1:nb_scenarios])
+
+    I = [src(e) for e in edges(g)]
+    J = [dst(e) for e in edges(g)]
+    ff = [StochasticForwardFunction(slacks[i, j], delays[i, :]) for (i, j) in zip(I, J)]
+    bb = [StochasticBackwardFunction(slacks[i, j], delays[i, :]) for (i, j) in zip(I, J)]
+
+    FF = sparse(I, J, ff)
+    BB = sparse(I, J, bb)
+
+    instance = RCSPInstance(g, origin_forward_resource, destination_backward_resource, stochastic_cost, FF, BB)
+    return generalized_constrained_shortest_path(instance)
+end

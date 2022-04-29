@@ -10,6 +10,8 @@ end
 PiecewiseLinear(final_slope::Int, x::Float64, y::Float64) =
     PiecewiseLinear(final_slope, [x], [y])
 
+PiecewiseLinear() = PiecewiseLinear(0.0, [0.0], [0.0])
+
 """
     closest_break_point(f, x)
 

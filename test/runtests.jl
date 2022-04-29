@@ -13,6 +13,10 @@ using SparseArrays
         include("resource_shortest_path.jl")
     end
 
+    @testset "PiecewiseLinear" begin
+        include("piecewise_linear.jl")
+    end
+
     @testset "Stochastic routing" begin
         include("stochastic_routing.jl")
     end
