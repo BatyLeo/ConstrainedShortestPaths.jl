@@ -1,33 +1,55 @@
-@testset "Custom example" begin
+@testset "1D" begin
     nb_vertices = 4
-    graph = MetaDiGraph(SimpleDiGraph(nb_vertices))
+    graph = SimpleDiGraph(nb_vertices)
 
-    edges = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
-    costs = [1., 2., -1., 1., 1.]
-    weights = [0., 0., 10., 0., 0]
-    max_weight = 1.0
+    edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
+    distance_list = [1., 2, -1., 1., 1.]
+    costs_dimension = 1
+    cost_list = [[0.], [0.], [10.], [0.], [0]]
+    max_cost = [1.0]
 
-    forward_functions = Dict{Tuple{Int, Int}, CSPFunction}()
-    backward_functions = Dict{Tuple{Int, Int}, CSPFunction}()
-
-    for ((i, j), c, w) in zip(edges, costs, weights)
+    for (i, j) in edge_list
         add_edge!(graph, i, j)
-        forward_functions[i, j] = CSPFunction(c, w)
-        backward_functions[i, j] = CSPFunction(c, w)
     end
 
-    origin_forward_resource = CSPResource(0., 0.)
-    destination_backward_resource = CSPResource(0., 0.)
+    I = [src(e) for e in edges(graph)]
+    J = [dst(e) for e in edges(graph)]
+    d = sparse(I, J, distance_list)
 
-    instance = RCSPProblem(graph, origin_forward_resource, destination_backward_resource, CSPCost(max_weight), forward_functions, backward_functions)
+    c = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
+    for ((i, j), k) in zip(edge_list, cost_list)
+        c[i, j, :] = k
+    end
 
-    bounds = compute_bounds(instance)
-    @info "Bounds" bounds
-    initial_cost = instance.cost_function(origin_forward_resource, bounds[1])
-    @info "Initial cost" initial_cost
-
-    p_star, c_star = generalized_A_star(instance, bounds)
-    @info "Shortest path" p_star
+    p_star, c_star = resource_shortest_path(graph, max_cost, d, c)
+    @test p_star == [1, 2, 4]
     @test c_star == 2
-    @test initial_cost <= c_star
+end
+
+@testset "2D" begin
+    nb_vertices = 4
+    graph = SimpleDiGraph(nb_vertices)
+
+    edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
+    distance_list = [1., 0.5, -1., 1., 1.]
+    costs_dimension = 2
+    cost_list = [[0., 0.], [0., 10.], [10., 0.], [0., 0.], [0, 10.]]
+    max_cost = [1.0, 1.0]
+
+    for (i, j) in edge_list
+        add_edge!(graph, i, j)
+    end
+
+    I = [src(e) for e in edges(graph)]
+    J = [dst(e) for e in edges(graph)]
+    d = sparse(I, J, distance_list)
+
+    c = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
+    for ((i, j), k) in zip(edge_list, cost_list)
+        c[i, j, :] = k
+    end
+
+    p_star, c_star = resource_shortest_path(graph, max_cost, d, c)
+    @test p_star == [1, 2, 4]
+    @test c_star == 2
 end

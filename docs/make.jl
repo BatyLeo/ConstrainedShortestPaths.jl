@@ -1,24 +1,35 @@
-using RCSP
+using ConstrainedShortestPaths
 using Documenter
+using Literate
 
-DocMeta.setdocmeta!(RCSP, :DocTestSetup, :(using RCSP); recursive=true)
+DocMeta.setdocmeta!(ConstrainedShortestPaths, :DocTestSetup, :(using ConstrainedShortestPaths); recursive=true)
+
+wrapper_jl_file = joinpath(dirname(@__DIR__), "test", "tutorial.jl")
+custom_jl_file = joinpath(dirname(@__DIR__), "test", "custom.jl")
+tuto_md_dir = joinpath(@__DIR__, "src")
+Literate.markdown(wrapper_jl_file, tuto_md_dir; documenter=true, execute=false)
+Literate.markdown(custom_jl_file, tuto_md_dir; documenter=true, execute=false)
 
 makedocs(;
-    modules=[RCSP],
-    authors="BatyLeo <leo.baty67@gmail.com> and contributors",
-    repo="https://github.com/BatyLeo/RCSP.jl/blob/{commit}{path}#{line}",
-    sitename="RCSP.jl",
+    modules=[ConstrainedShortestPaths],
+    authors="BatyLeo and contributors",
+    repo="https://github.com/BatyLeo/ConstrainedShortestPaths.jl/blob/{commit}{path}#{line}",
+    sitename="ConstrainedShortestPaths.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://BatyLeo.github.io/RCSP.jl",
+        canonical="https://BatyLeo.github.io/ConstrainedShortestPaths.jl",
         assets=String[],
+        # collapselevel = 1,
     ),
     pages=[
         "Home" => "index.md",
+        "Mathematical background" => ["math.md", "examples.md"],
+        "Tutorials" => ["tutorial.md", "custom.md"],
+        "api.md",
     ],
 )
 
 deploydocs(;
-    repo="github.com/BatyLeo/RCSP.jl",
+    repo="github.com/BatyLeo/ConstrainedShortestPaths.jl",
     devbranch="main",
 )

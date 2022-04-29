@@ -1,5 +1,5 @@
 @traitfn function compute_bounds(
-    instance::RCSPProblem{G}
+    instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(instance.graph)
@@ -18,7 +18,7 @@
 end
 
 @traitfn function generalized_A_star(
-    instance::RCSPProblem{G}, bounds::AbstractVector
+    instance::RCSPInstance{G}, bounds::AbstractVector
 ) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(graph)
@@ -27,7 +27,9 @@ end
     empty_path = [origin]
 
     forward_resources = Dict(empty_path => instance.origin_forward_resource)
-    L = PriorityQueue{Vector{Int},Float64}(empty_path => instance.cost_function(forward_resources[empty_path], bounds[origin]))
+    L = PriorityQueue{Vector{Int},Float64}(
+        empty_path => instance.cost_function(forward_resources[empty_path], bounds[origin])
+    )
     M = [typeof(forward_resources[empty_path])[] for _ in 1:nb_vertices]
     push!(M[origin], forward_resources[empty_path])
     c_star = Inf
@@ -54,4 +56,11 @@ end
         end
     end
     return p_star, c_star
+end
+
+@traitfn function generalized_constrained_shortest_path(
+    instance::RCSPInstance{G}
+) where {G <: AbstractGraph; IsDirected{G}}
+    bounds = compute_bounds(instance)
+    return generalized_A_star(instance, bounds)
 end

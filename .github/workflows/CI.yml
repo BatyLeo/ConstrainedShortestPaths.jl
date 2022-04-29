@@ -53,6 +53,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using RCSP
-            DocMeta.setdocmeta!(RCSP, :DocTestSetup, :(using RCSP); recursive=true)
-            doctest(RCSP)'
+            using ConstrainedShortestPaths
+            DocMeta.setdocmeta!(ConstrainedShortestPaths, :DocTestSetup, :(using ConstrainedShortestPaths); recursive=true)
+            doctest(ConstrainedShortestPaths)'
