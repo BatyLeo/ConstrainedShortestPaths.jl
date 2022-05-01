@@ -1,21 +1,29 @@
 """
-Only increasing functions
+    PiecewiseLinear
+
+Type used to represent increasing piecewise linear functions, with starting slope 0.
+
+# Attributes
+- `final_slope::Float64`: (positive) slope of the last linear piece.
+- `break_x::Vector{Float64}`: (ordered) list of all break points x-coordinates.
+- `break_y::Vector{Float64}`: (non decreasing) list of all break points y-coordinates
+    corresponding to `break_x` elementwise.
 """
 struct PiecewiseLinear
-    final_slope::Int
+    final_slope::Float64
     break_x::Vector{Float64}
     break_y::Vector{Float64}
 end
 
-PiecewiseLinear(final_slope::Int, x::Float64, y::Float64) =
-    PiecewiseLinear(final_slope, [x], [y])
+PiecewiseLinear(final_slope::Float64, slack::Float64, delay::Float64) =
+    PiecewiseLinear(final_slope, [slack], [delay])
 
-PiecewiseLinear() = PiecewiseLinear(0.0, [0.0], [0.0])
+PiecewiseLinear() = PiecewiseLinear(0.0, 0.0, 0.0)
 
 """
     closest_break_point(f, x)
 
-Find the index of the closest break point from x
+Find the index of the closest break point from x.
 (at its right i fright=true else at its left)
 """
 function closest_break_point(f::PiecewiseLinear, x::Real; right=true)
@@ -30,6 +38,11 @@ function closest_break_point(f::PiecewiseLinear, x::Real; right=true)
     return right ? nb_break_points + 1 : nb_break_points
 end
 
+"""
+    (f)(x)
+
+Returns f(x).
+"""
 function (f::PiecewiseLinear)(x::Real)
     break_x, break_y = f.break_x, f.break_y
     nb_break_points = length(break_x)
@@ -48,6 +61,11 @@ function (f::PiecewiseLinear)(x::Real)
     return y1 + slope * (x - x1)
 end
 
+"""
+    +(f1, f2)
+
+Return a PiecewiseLinear corresponding to f1 + f2.
+"""
 function +(f1::PiecewiseLinear, f2::PiecewiseLinear)
     i1_max = length(f1.break_x)
     i2_max = length(f2.break_x)
@@ -81,8 +99,9 @@ function +(f1::PiecewiseLinear, f2::PiecewiseLinear)
 end
 
 """
-    f1 ∘ f2
+    compose(f1, f2)
 
+Return a PiecewiseLinear v corresponding to f1 ∘ f2
 ! only support functions with only one break point and final slope 1
 """
 function compose(f1::PiecewiseLinear, f2::PiecewiseLinear)
@@ -98,6 +117,7 @@ function get_x(f::PiecewiseLinear, i::Int; x_max=1000)
     return i <= length(f.break_x) ? f.break_x[i] : x_max
 end
 
+# !!! not used
 function get_y(f::PiecewiseLinear, i::Int; x_max=1000)
     return i <= length(f.break_y) ? f.break_y[i] : f(x_max)
 end

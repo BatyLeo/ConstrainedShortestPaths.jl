@@ -58,7 +58,7 @@ end
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
     slack = f.slack
     return StochasticBackwardResource([
-        PiecewiseLinear(1.0, [slack], [delay]) + compose(g, PiecewiseLinear(1.0, [slack], [delay]))
+        PiecewiseLinear(1.0, slack, delay) + compose(g, PiecewiseLinear(1.0, slack, delay))
     for (delay, g) in zip(f.delays, q.g)])
 end
 
@@ -72,10 +72,16 @@ end
 """
     stochastic_routing_shortest_path(g, slacks, delays)
 
-Args:
-- g: acyclic directed graph
-- slacks: [i, j]
-- delays: [i, ω]
+Compute stochastic routing shortest path between first and last vertices of graph `g`.
+
+# Arguments
+- `g::AbstractGraph`: acyclic directed graph.
+- `slacks`: `slacks[i, j]` corresponds to the time slack between `i` and `j`.
+- `delays`: `delays[i, ω]` corresponds to delay of `i` for scenario `ω`.
+
+# Returns
+- `p_star::Vector{Int}`: optimal path found.
+- `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function stochastic_routing_shortest_path(
     g::G, slacks::AbstractMatrix, delays::AbstractMatrix
