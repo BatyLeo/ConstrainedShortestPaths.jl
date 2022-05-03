@@ -1,9 +1,9 @@
 module ConstrainedShortestPaths
 
+using DataStructures
 using Graphs
 using SimpleTraits
 using SparseArrays
-using DataStructures
 import Base: <=, minimum, +
 
 export basic_shortest_path, resource_shortest_path, stochastic_routing_shortest_path
