@@ -1,4 +1,4 @@
-# # Using built-in wrappers
+# # Basic usage
 
 #=
 At the moment, this library provides wrappers for two problems: the usual shortest path and

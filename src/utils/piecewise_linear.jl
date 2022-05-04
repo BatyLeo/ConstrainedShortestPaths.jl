@@ -15,7 +15,7 @@ struct PiecewiseLinear
     break_y::Vector{Float64}
 end
 
-PiecewiseLinear(final_slope::Float64, slack::Float64, delay::Float64) =
+PiecewiseLinear(final_slope::Real, slack::Real, delay::Real) =
     PiecewiseLinear(final_slope, [slack], [delay])
 
 PiecewiseLinear() = PiecewiseLinear(0.0, 0.0, 0.0)
@@ -106,12 +106,38 @@ Return a PiecewiseLinear corresponding to f1 ∘ f2
 ! only support functions with only one break point and final slope 1
 """
 function compose(f1::PiecewiseLinear, f2::PiecewiseLinear)
-    # ! only support functions with only one break point and final slope 1
-    x1, y1 = f1.break_x[1], f1.break_y[1]
-    x2, y2 = f2.break_x[1], f2.break_y[1]
-    new_x = x2 + max(x1 - y2, 0)
-    new_y = y1 + max(y2 - x1, 0)
-    return PiecewiseLinear(1., [new_x], [new_y])
+    x_list = []
+    y_list = []
+    for (i, x1) in enumerate(f2.break_x)
+        x2 = get_x(f2, i+1)
+        y1, y2 = f2(x1), f2(x2)
+        push!(x_list, x1)
+        push!(y_list, f1(y1))
+        a = (y2 - y1) / (x2 - x1)
+        if a == 0
+            continue
+        end
+        b = y1 - a * x1
+        jmin = closest_break_point(f1.break_x, y1; right=true)
+        jmax = closest_break_point(f1.break_x, y2; right=false)
+        for j in jmin:jmax
+            x̄ = f1.break_x[j]
+            x = (x̄ - b) / a
+            push!(x_list, x)
+            push!(y_list, f1(x̄))
+        end
+    end
+    return PiecewiseLinear(f1.final_slope * f2.final_slope, x_list, y_list)
+
+    # # ! only support functions with only one break point and final slope 1
+    # if f1.final_slope == 0.0
+    #     return PiecewiseLinear()
+    # end
+    # x1, y1 = f1.break_x[1], f1.break_y[1]
+    # x2, y2 = f2.break_x[1], f2.break_y[1]
+    # new_x = x2 + max(x1 - y2, 0)
+    # new_y = y1 + max(y2 - x1, 0)
+    # return PiecewiseLinear(1., [new_x], [new_y])
 end
 
 """
@@ -124,14 +150,14 @@ function get_x(f::PiecewiseLinear, i::Int; x_max=1000)
 end
 
 # !!! not used
-"""
-    get_y(f, i; x_max=1000)
+# """
+#     get_y(f, i; x_max=1000)
 
-Return y coordinate of break_point i. If i is out of range, return f(x_max)
-"""
-function get_y(f::PiecewiseLinear, i::Int; x_max=1000)
-    return i <= length(f.break_y) ? f.break_y[i] : f(x_max)
-end
+# Return y coordinate of break_point i. If i is out of range, return f(x_max)
+# """
+# function get_y(f::PiecewiseLinear, i::Int; x_max=1000)
+#     return i <= length(f.break_y) ? f.break_y[i] : f(x_max)
+# end
 
 """
     get_points(f1, f2, i1, i2)
@@ -184,7 +210,9 @@ function intersection(f1::PiecewiseLinear, f2::PiecewiseLinear, i1::Int, i2::Int
     # TODO: check edge cases
     xi1 = max(x11, x21)
     xi2 = min(x12, x22)
-    if sign(f1(xi1) - f2(xi1)) == sign(f1(xi2) - f2(xi2))
+    signi1 = sign(f1(xi1) - f2(xi1))
+    signi2 = sign(f1(xi2) - f2(xi2))
+    if signi1 * signi2 >= 0  # == 0 || signi2 == 0 || signi1 == signi2
         return no_intersection
     end
 
@@ -214,7 +242,6 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
     i1_max = length(f1.break_x)
     i2_max = length(f2.break_x)
     while i1 < i1_max || i2 < i2_max
-        #@warn "Lists" x_list y_list i1 i2
         i1 = min(i1, i1_max)
         i2 = min(i2, i2_max)
         x = intersection(f1, f2, i1, i2)

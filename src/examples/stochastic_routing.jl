@@ -3,6 +3,19 @@ struct StochasticForwardResource
     xi::Vector{Float64}
 end
 
+struct StochasticBackwardResource
+    g::Vector{PiecewiseLinear}
+end
+struct StochasticForwardFunction
+    slack::Float64
+    delays::Vector{Float64}
+end
+
+struct StochasticBackwardFunction
+    slack::Float64
+    delays::Vector{Float64}
+end
+
 function <=(r1::StochasticForwardResource, r2::StochasticForwardResource)
     if r1.c > r2.c
         return false
@@ -17,29 +30,19 @@ function <=(r1::StochasticForwardResource, r2::StochasticForwardResource)
     return true
 end
 
-struct StochasticForwardFunction
-    slack::Float64
-    delays::Vector{Float64}
-end
-
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)
-    m = length(f.delays)
     slack = f.slack
 
     new_xi = [
         max(propagated_delay - slack, 0) + local_delay for
         (propagated_delay, local_delay) in zip(q.xi, f.delays)
     ]
-    new_c = q.c + sum(new_xi) / m
+    new_c = q.c + mean(new_xi)
     return StochasticForwardResource(new_c, new_xi)
 end
 
-struct StochasticBackwardResource
-    g::Vector{PiecewiseLinear}
-end
-
-function minimum(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
-    return [meet(g1, g2) for (g1, g2) in zip(r1.g, r2.g)]
+function meet(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
+    return StochasticBackwardResource([meet(g1, g2) for (g1, g2) in zip(r1.g, r2.g)])
 end
 
 function minimum(r::Vector{StochasticBackwardResource})
@@ -48,11 +51,6 @@ function minimum(r::Vector{StochasticBackwardResource})
         res = meet(res, resource)
     end
     return res
-end
-
-struct StochasticBackwardFunction
-    slack::Float64
-    delays::Vector{Float64}
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
@@ -88,13 +86,13 @@ Compute stochastic routing shortest path between first and last vertices of grap
 ) where {G <: AbstractGraph; IsDirected{G}}
     nb_scenarios = size(delays, 2)
 
-    origin_forward_resource = StochasticForwardResource(0.0, [0.0 for _ = 1:nb_scenarios])
+    origin_forward_resource = StochasticForwardResource(mean(delays[1, :]), delays[1, :])
     destination_backward_resource = StochasticBackwardResource([PiecewiseLinear() for _ = 1:nb_scenarios])
 
     I = [src(e) for e in edges(g)]
     J = [dst(e) for e in edges(g)]
-    ff = [StochasticForwardFunction(slacks[i, j], delays[i, :]) for (i, j) in zip(I, J)]
-    bb = [StochasticBackwardFunction(slacks[i, j], delays[i, :]) for (i, j) in zip(I, J)]
+    ff = [StochasticForwardFunction(slacks[u, v], delays[v, :]) for (u, v) in zip(I, J)]
+    bb = [StochasticBackwardFunction(slacks[u, v], delays[v, :]) for (u, v) in zip(I, J)]
 
     FF = sparse(I, J, ff)
     BB = sparse(I, J, bb)

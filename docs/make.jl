@@ -19,12 +19,13 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://BatyLeo.github.io/ConstrainedShortestPaths.jl",
         assets=String[],
-        # collapselevel = 1,
+        collapselevel = 1,
     ),
     pages=[
         "Home" => "index.md",
+        "tutorial.md",
         "Mathematical background" => ["math.md", "examples.md"],
-        "Tutorials" => ["tutorial.md", "custom.md"],
+        "custom.md",
         "api.md",
     ],
 )

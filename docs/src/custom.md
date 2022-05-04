@@ -2,7 +2,7 @@
 EditURL = "<unknown>/test/custom.jl"
 ```
 
-# Build a custom wrapper
+# Implement a custom problem
 
 !!! warning "Work in progress"
 

@@ -44,9 +44,41 @@ end
     @test [f4(x) for x in 0:50] == [f1(x) + f2(x) for x in 0:50]
 end
 
+@testset "Mini test 2" begin
+    f1 = PiecewiseLinear(1, [0], [0])
+    f2 = PiecewiseLinear()
+
+    if SHOW_PLOTS
+        fplot(f1)
+        fplot(f2)
+    end
+
+    # Test intersection
+    @test intersection(f1, f2, 0, 0) == -1
+    @test intersection(f1, f2, 1, 1) == -1
+
+    # test meet operation
+    m = meet(f1, f2)
+    @test m.break_x == [0.] && m.break_y == [0.]
+    @test [m(x) for x in 0:50] == [min(f1(x), f2(x)) for x in 0:50]
+
+    # test sum
+    f4 = f1 + f2
+    @test [f4(x) for x in 0:50] == [f1(x) + f2(x) for x in 0:50]
+end
+
+# @testset "Mini test 3" begin
+#     f1 = PiecewiseLinear(1, 0, 1)
+#     f2 = PiecewiseLinear(1, 5, 1)
+
+#     c = compose(f1, f2)
+#     a = compose(f1, f1)+f1
+#     b = compose(meet(c+f2, f1), f1)
+#     @info "Composition" c c+f2 meet(c+f2, f1) compose(f1, f1) a b meet(a, b+f1)
+# end
+
 @testset "Meet and sum" begin
     nb_tests = 100
-    Random.seed!(2)
     for _ in 1:nb_tests
         r(n=5, m=10) = sort([rand() * m for _ in 1:n])
 
@@ -70,7 +102,6 @@ end
 
 @testset "Composition" begin
     nb_tests = 100
-    Random.seed!(2)
     for _ in 1:nb_tests
         r(m=10) = rand() * m
 
