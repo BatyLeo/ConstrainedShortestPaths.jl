@@ -1,3 +1,15 @@
+"""
+    RCSPInstance{G,FR,BR,C,FF,BF}
+
+# Attributes
+
+- `graph`:
+- `origin_forward_resource`:
+- `destination_backward_resource`:
+- `cost_function`:
+- `forward_functions`:
+- `backward_functions`:
+"""
 struct RCSPInstance{G,FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix}
     graph::G  # assumption : node 1 is origin, last node is destination
     origin_forward_resource::FR
@@ -7,6 +19,11 @@ struct RCSPInstance{G,FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix}
     backward_functions::BF
 end
 
+"""
+    compute_bounds(instance)
+
+aa
+"""
 @traitfn function compute_bounds(
     instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
@@ -24,6 +41,11 @@ end
     return bounds
 end
 
+"""
+    generalized_A_star(instance, bounds)
+
+aa
+"""
 @traitfn function generalized_A_star(
     instance::RCSPInstance{G}, bounds::AbstractVector
 ) where {G <: AbstractGraph; IsDirected{G}}
@@ -65,6 +87,11 @@ end
     return (p_star=p_star, c_star=c_star)
 end
 
+"""
+    generalized_constrained_shortest_path(instance)
+
+aa
+"""
 @traitfn function generalized_constrained_shortest_path(
     instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}

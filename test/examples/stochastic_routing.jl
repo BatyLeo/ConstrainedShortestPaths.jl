@@ -41,7 +41,7 @@ end
 
     nb_vertices = 4
     graph = SimpleDiGraph(nb_vertices)
-    edge_list = [(1, 2), (2, 3), (2, 4), (3, 4)]
+    edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
     for (i, j) in edge_list
         add_edge!(graph, i, j)
     end
@@ -51,8 +51,9 @@ end
     J = [dst(e) for e in edges(graph)]
 
     @testset "No delays" begin
-        slacks = [0.0 for _ in 1:nb_edges]
-        delays = [0.0 for _ in 1:nb_vertices, _ in 1:m]
+        delays = reshape([0, 0, 0, 0], nb_vertices, 1)
+        slacks_theory = [0.0 for _ in 1:nb_edges]
+        slacks = [s + delays[v] for ((u, v), s) in zip(edge_list, slacks_theory)]
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
         @test c_star == 0.0
@@ -60,29 +61,32 @@ end
     end
 
     @testset "No slack" begin
-        slacks = [0.0 for _ in 1:nb_edges]
-        delays = [1.0 for _ in 1:nb_vertices, _ in 1:m]
+        delays = reshape([0, 2, 1, 0], nb_vertices, 1)
+        slacks_theory = [0.0 for _ in 1:nb_edges]
+        slacks = [s + delays[v] for ((u, v), s) in zip(edge_list, slacks_theory)]
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
-        @test c_star == 6
-        @test p_star == [1, 2, 4]
+        @test c_star == 2
+        @test p_star == [1, 3, 4]
     end
 
     @testset "With slack" begin
-        slacks = [0.0, 5.0, 0.0, 5.0]
-        delays = [1.0 for _ in 1:nb_vertices, _ in 1:m]
+        delays = reshape([0, 3, 4, 0], nb_vertices, 1)
+        slacks_theory = [0, 0, 0, 0, 3]
+        slacks = [s + delays[v] for ((u, v), s) in zip(edge_list, slacks_theory)]
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
         @test c_star == 5
-        @test p_star == [1, 2, 3, 4]
+        @test p_star == [1, 3, 4]
     end
 
-    @testset "With slack" begin
-        slacks = [0.0, 0.0, 20.0, 0.0]
-        delays = [1.0 for _ in 1:nb_vertices, _ in 1:m]
+    @testset "Detour with slack" begin
+        delays = reshape([10, 1, 0, 0], nb_vertices, 1)
+        slacks_theory = [5, 0, 5, 0, 0]
+        slacks = [s + delays[v] for ((u, v), s) in zip(edge_list, slacks_theory)]
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
-        @test c_star == 4
-        @test p_star == [1, 2, 4]
+        @test c_star == 15
+        @test p_star == [1, 2, 3, 4]
     end
 end
