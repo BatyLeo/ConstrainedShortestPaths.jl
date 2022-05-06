@@ -90,3 +90,28 @@ end
         @test p_star == [1, 2, 3, 4]
     end
 end
+
+@testset "Random graphs one scenario" begin
+    n = 100
+    nb_vertices = 50
+    m = 1
+    for i in 1:n
+        Random.seed!(i)
+        graph = random_acyclic_digraph(nb_vertices)
+
+        nb_edges = ne(graph)
+        I = [src(e) for e in edges(graph)]
+        J = [dst(e) for e in edges(graph)]
+
+        delays = reshape([rand() * 10 for _ in 1:nb_vertices], nb_vertices, 1)
+        slacks_theory = [rand() * 10 for _ in 1:nb_edges]
+        slacks = [s + delays[e.dst] for (e, s) in zip(edges(graph), slacks_theory)]
+        slack_matrix = sparse(I, J, slacks)
+        (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
+
+        c, p = stochastic_PLNE(graph, slack_matrix, delays)
+
+        @test_broken c_star == c
+        @test_broken p_star == p
+    end
+end

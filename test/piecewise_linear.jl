@@ -67,19 +67,10 @@ end
     @test [f4(x) for x in 0:50] == [f1(x) + f2(x) for x in 0:50]
 end
 
-# @testset "Mini test 3" begin
-#     f1 = PiecewiseLinear(1, 0, 1)
-#     f2 = PiecewiseLinear(1, 5, 1)
-
-#     c = compose(f1, f2)
-#     a = compose(f1, f1)+f1
-#     b = compose(meet(c+f2, f1), f1)
-#     @info "Composition" c c+f2 meet(c+f2, f1) compose(f1, f1) a b meet(a, b+f1)
-# end
-
 @testset "Meet and sum" begin
     nb_tests = 100
-    for _ in 1:nb_tests
+    for i in 1:nb_tests
+        Random.seed!(i)
         r(n=5, m=10) = sort([rand() * m for _ in 1:n])
 
         f1 = PiecewiseLinear(rand()*5, r(), r())
@@ -102,7 +93,8 @@ end
 
 @testset "Composition" begin
     nb_tests = 100
-    for _ in 1:nb_tests
+    for i in 1:nb_tests
+        Random.seed!(i)
         r(m=10) = rand() * m
 
         f1 = PiecewiseLinear(1., [r()], [r()])

@@ -5,8 +5,12 @@ using Graphs
 using Random
 using SparseArrays
 using UnicodePlots
+using JuMP
+using GLPK
 
 const SHOW_PLOTS = false
+
+include("utils.jl")
 
 @testset verbose=true "RCSP.jl" begin
     @testset "PiecewiseLinear" begin
