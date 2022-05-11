@@ -65,6 +65,7 @@ aa
     p_star = [origin]  # undef
 
     while length(L) > 0
+        #@info "Info" L forward_resources M c_star p_star
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
@@ -74,27 +75,34 @@ aa
             rq = instance.forward_functions[v, w](rp)
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
-            if w == nb_vertices && c < c_star
-                c_star = c
-                p_star = copy(q)
-            elseif !is_dominated(rq, M[w]) && c < c_star
-                remove_dominated!(M[w], rq)
-                push!(M[w], rq)
-                enqueue!(L, q => c)
+            #@info "A" q c rq bounds[w]
+            if c < c_star
+                if w == nb_vertices # if destination is reached
+                    c_star = c
+                    p_star = copy(q)
+                elseif !is_dominated(rq, M[w]) # else add path to queue if not dominated
+                    remove_dominated!(M[w], rq)
+                    push!(M[w], rq)
+                    enqueue!(L, q => c)
+                end
             end
         end
     end
+    #@info "cost" instance.cost_function(forward_resources[p_star], bounds[end]) forward_resources[p_star]
+    #r = instance.forward_functions[9, 10](forward_resources[[1,7,9]])
+    #@info "cost" instance.cost_function(r, bounds[end]) r
     return (p_star=p_star, c_star=c_star)
 end
 
 """
     generalized_constrained_shortest_path(instance)
 
-aa
+Compute shortest path between first and last nodes of `instance`
 """
 @traitfn function generalized_constrained_shortest_path(
     instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
     bounds = compute_bounds(instance)
+    #@info "Bounds" bounds
     return generalized_A_star(instance, bounds)
 end

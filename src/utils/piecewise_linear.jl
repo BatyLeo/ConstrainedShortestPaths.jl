@@ -15,8 +15,12 @@ struct PiecewiseLinear
     break_y::Vector{Float64}
 end
 
-PiecewiseLinear(final_slope::Real, slack::Real, delay::Real) =
-    PiecewiseLinear(final_slope, [slack], [delay])
+function PiecewiseLinear(final_slope::Real, slack::Real, delay::Real)
+    if slack == Inf
+        return PiecewiseLinear(0.0, [0.0], [delay])
+    end
+    return PiecewiseLinear(final_slope, [slack], [delay])
+end
 
 PiecewiseLinear() = PiecewiseLinear(0.0, 0.0, 0.0)
 
@@ -231,6 +235,10 @@ Compute the minimum of two PiecewiseLinear functions
 Return a PiecewiseLinear f, such that ∀x, f(x) = min(f1(x), f2(x)).
 """
 function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
+    if (f1.break_x == [0.0] && f1.break_x == [0.0]) || (f2.break_y == [0.0] && f2.break_y == [0.0])
+        # ! doesn't work when negative
+        return PiecewiseLinear()
+    end
     # TODO: check edge cases
     final_slope = min(f1.final_slope, f2.final_slope)
     x_list = Float64[]
@@ -321,6 +329,10 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
     if x != -1
         push!(x_list, x)
         push!(y_list, f1(x))
+    end
+
+    if x_list == []
+        @warn "Empty return" f1 f2
     end
 
     return PiecewiseLinear(final_slope, x_list, y_list)
