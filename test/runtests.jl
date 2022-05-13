@@ -2,12 +2,12 @@ using ConstrainedShortestPaths
 using Test
 
 using Cbc
+using GLPK
 using Graphs
+using JuMP
 using Random
 using SparseArrays
 using UnicodePlots
-using JuMP
-using GLPK
 
 const SHOW_PLOTS = false
 const vehicle_cost = 0.0

@@ -2,13 +2,28 @@ using ConstrainedShortestPaths
 using Documenter
 using Literate
 
-DocMeta.setdocmeta!(ConstrainedShortestPaths, :DocTestSetup, :(using ConstrainedShortestPaths); recursive=true)
+DocMeta.setdocmeta!(
+    ConstrainedShortestPaths,
+    :DocTestSetup,
+    :(using ConstrainedShortestPaths);
+    recursive=true
+)
 
-wrapper_jl_file = joinpath(dirname(@__DIR__), "test", "tutorial.jl")
-custom_jl_file = joinpath(dirname(@__DIR__), "test", "custom.jl")
-tuto_md_dir = joinpath(@__DIR__, "src")
-Literate.markdown(wrapper_jl_file, tuto_md_dir; documenter=true, execute=false)
-Literate.markdown(custom_jl_file, tuto_md_dir; documenter=true, execute=false)
+md_dir = joinpath(@__DIR__, "src")
+jl_dir = joinpath(md_dir, "literate")
+
+# last element if for custom, others are for tutorial
+tuto_list = [
+    "basic_shortest_path",
+    "resource_shortest_path",
+    "stochastic_vsp",
+    "custom"
+]
+
+for tuto in tuto_list
+    jl_file = joinpath(jl_dir, "$tuto.jl")
+    Literate.markdown(jl_file, md_dir; documenter=true, execute=false)
+end
 
 makedocs(;
     modules=[ConstrainedShortestPaths],
@@ -23,9 +38,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "tutorial.md",
-        "Mathematical background" => ["math.md", "examples.md"],
-        "custom.md",
+        "Tutorial" => ["$tuto.md" for tuto in tuto_list[1:end-1]],
+        "Mathematical background" => ["setting.md", "algorithms.md", "examples.md"],
+        "$(tuto_list[end]).md",
         "api.md",
     ],
 )
