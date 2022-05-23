@@ -9,13 +9,13 @@ struct StochasticBackwardResource
     λ::Float64
 end
 struct StochasticForwardFunction
-    slack::Float64
+    slacks::Vector{Float64}
     delays::Vector{Float64}
     λ_value::Float64
 end
 
 struct StochasticBackwardFunction
-    slack::Float64
+    slacks::Vector{Float64}
     delays::Vector{Float64}
     λ_value::Float64
 end
@@ -50,10 +50,9 @@ function minimum(r_vec::Vector{StochasticBackwardResource})
 end
 
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)
-    slack = f.slack
     new_xi = [
-        max(propagated_delay - slack, 0) + local_delay for
-        (propagated_delay, local_delay) in zip(q.xi, f.delays)
+        local_delay + max(propagated_delay - slack, 0) for
+        (propagated_delay, local_delay, slack) in zip(q.xi, f.delays, f.slacks)
     ]
     new_c = q.c + mean(new_xi)
     new_λ = q.λ + f.λ_value
@@ -61,9 +60,9 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
-    slack = f.slack
     return StochasticBackwardResource(
-        [PiecewiseLinear(1.0, slack, delay) + compose(g, PiecewiseLinear(1.0, slack, delay)) for (delay, g) in zip(f.delays, q.g)],
+        [PiecewiseLinear(1.0, slack, delay) + compose(g, PiecewiseLinear(1.0, slack, delay))
+            for (delay, g, slack) in zip(f.delays, q.g, f.slacks)],
         f.λ_value + q.λ
     )
 end

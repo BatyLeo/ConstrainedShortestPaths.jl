@@ -69,12 +69,13 @@ function resource_PLNE(g, d, c, C)
 end
 
 function path_cost(path, slacks, delays)
+    nb_scenarios = size(delays, 2)
     old_v = path[1]
-    R = delays[old_v]
+    R = delays[old_v, :]
     C = 0.0
     for v in path[2:end-1]
-        R = delays[v] + max(R - slacks[old_v, v], 0)
-        C += R
+        @. R = max(R - slacks[old_v, v], 0) + delays[v, :]
+        C += sum(R) / nb_scenarios
         old_v = v
     end
     return C + vehicle_cost
@@ -127,14 +128,42 @@ function stochastic_PLNE(g, slacks, delays, initial_paths)
     return value.(λ), objective_value(model), new_paths, dual.(con), dual.(cons)
 end
 
-function solve_scenario(graph, slacks, delays)
+function column_generation(g, slacks, delays, paths::Vector{Vector{Int}}; bin=true)
+    nb_nodes = nv(g)
+    job_indices = 2:nb_nodes-1
+
+    model = Model(GLPK.Optimizer)
+
+    if bin
+        @variable(model, y[p in paths], Bin)# >= 0)
+    else
+        @variable(model, y[p in paths] >= 0)
+    end
+
+    @objective(model, Min, sum(path_cost(p, slacks, delays) * y[p] for p in paths))
+
+    @constraint(
+        model,
+        con[v in job_indices],
+        sum(y[p] for p in paths if v in p) == 1
+    )
+
+    optimize!(model)
+
+    return objective_value(model), value.(y)
+end
+
+function solve_scenarios(graph, slacks, delays)
     nb_nodes = nv(graph)
     job_indices = 2:nb_nodes-1
     nodes = 1:nb_nodes
 
     # Pre-processing
     ε = delays
-    Rmax = sum(ε)
+    #Rmax = maximum(ε, dims=1)
+    Rmax = maximum(sum(ε, dims=1))
+    nb_scenarios = size(ε, 2)
+    Ω = 1:nb_scenarios
 
     # Model definition
     model = Model(Cbc.Optimizer)
@@ -142,13 +171,13 @@ function solve_scenario(graph, slacks, delays)
 
     # Variables and objective function
     @variable(model, y[u in nodes, v in nodes; has_edge(graph, u, v)], Bin)
-    @variable(model, R[v in nodes] >= 0) # propagated delay of job v
-    @variable(model, yR[u in nodes, v in nodes; has_edge(graph, u, v)] >= 0) # yR[u, v] = y[u, v] * R[u]
+    @variable(model, R[v in nodes, ω in Ω] >= 0) # propagated delay of job v
+    @variable(model, yR[u in nodes, v in nodes, ω in Ω; has_edge(graph, u, v)] >= 0) # yR[u, v] = y[u, v] * R[u, ω]
 
     @objective(
         model,
         Min,
-        sum(R[v] for v in job_indices) # total delay
+        sum(sum(R[v, ω] for v in job_indices) for ω in Ω) / nb_scenarios # average total delay
             + vehicle_cost * sum(y[1, v] for v in job_indices) # nb_vehicles
     )
 
@@ -166,24 +195,24 @@ function solve_scenario(graph, slacks, delays)
     )
 
     # Delay propagation constraints
-    @constraint(model, R[1] == ε[1])
-    @constraint(model, R_delay_1[v in job_indices], R[v] >= ε[v])
+    @constraint(model, [ω in Ω], R[1, ω] == ε[1, ω])
+    @constraint(model, R_delay_1[v in job_indices, ω in Ω], R[v, ω] >= ε[v, ω])
     @constraint(
         model,
-        R_delay_2[v in job_indices],
-        R[v] >= ε[v] + sum(yR[u, v] - y[u, v] * slacks[u, v] for u in nodes if has_edge(graph, u, v))
+        R_delay_2[v in job_indices, ω in Ω],
+        R[v, ω] >= ε[v, ω] + sum(yR[u, v, ω] - y[u, v] * slacks[u, v][ω] for u in nodes if has_edge(graph, u, v))
     )
 
     # Mc Cormick linearization constraints
     @constraint(
         model,
-        R_McCormick_1[u in nodes, v in nodes; has_edge(graph, u, v)],
-        yR[u, v] >= R[u] + Rmax * (y[u, v] - 1)
+        R_McCormick_1[u in nodes, v in nodes, ω in Ω; has_edge(graph, u, v)],
+        yR[u, v, ω] >= R[u, ω] + Rmax * (y[u, v] - 1)
     )
     @constraint(
         model,
-        R_McCormick_2[u in nodes, v in nodes; has_edge(graph, u, v)],
-        yR[u, v] <= Rmax * y[u, v]
+        R_McCormick_2[u in nodes, v in nodes, ω in Ω; has_edge(graph, u, v)],
+        yR[u, v, ω] <= Rmax * y[u, v]
     )
 
     # Solve model
@@ -209,29 +238,4 @@ function solve_scenario(graph, slacks, delays)
     end
 
     return objective_value(model), paths
-end
-
-function column_generation(g, slacks, delays, paths::Vector{Vector{Int}}; bin=true)
-    nb_nodes = nv(g)
-    job_indices = 2:nb_nodes-1
-
-    model = Model(GLPK.Optimizer)
-
-    if bin
-        @variable(model, y[p in paths], Bin)# >= 0)
-    else
-        @variable(model, y[p in paths] >= 0)
-    end
-
-    @objective(model, Min, sum(path_cost(p, slacks, delays) * y[p] for p in paths))
-
-    @constraint(
-        model,
-        con[v in job_indices],
-        sum(y[p] for p in paths if v in p) == 1
-    )
-
-    optimize!(model)
-
-    return objective_value(model), value.(y)
 end
