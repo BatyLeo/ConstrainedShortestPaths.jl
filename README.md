@@ -7,17 +7,16 @@
 
 ## Overview
 
-This package implements algorithms for solving Generalized Resource Constrained Shortest Paths problems. It implements a simplified version of the framework from [Parmentier 2017](https://arxiv.org/abs/1504.07880), restricted to acyclic directed graphs.
+This package implements algorithms for solving **Generalized Constrained Shortest Paths** problems. It implements a simplified version of the framework from [Parmentier 2017](https://arxiv.org/abs/1504.07880), restricted to acyclic directed graphs.
 
-Let $G=(V, A)$ an acyclic directed graph, $o, d\in V$ origin and destination vertices, $c$ a cost function, and $\mathcal{P}_{od}$ a set of feasible $o-d$ paths in $G$. This package can compute the corresponding **constrained shortest path**: 
+Let $G=(V, A)$ an **acyclic directed graph**, $o, d\in V$ **origin** and **destination** vertices, $c$ a **cost function**, and $\mathcal{P} \subset \mathcal{P}_{od}$ a subset of $o-d$ paths in $G$. This package can compute the corresponding **constrained shortest path**:
 
 $$
 \boxed{\begin{aligned}
-\min\quad & c(P)\\
-\text{s.t.}\quad & P\in \mathcal{P}_{od}
+P^\star = \arg\min\quad & c(P)\\
+\text{s.t.}\quad & P\in \mathcal{P}
 \end{aligned}}
 $$
-
 
 See the [documentation](https://batyleo.github.io/ConstrainedShortestPaths.jl) for more details.
 
@@ -29,4 +28,4 @@ To install this package, open a julia REPL and run the following command in pkg 
 add https://github.com/BatyLeo/ConstrainedShortestPaths.jl
 ```
 
-> This package is in a development stage, so use it at your own risk!
+> Note: this package is still in a development stage, so use it at your own risk!

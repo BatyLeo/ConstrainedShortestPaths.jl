@@ -8,6 +8,7 @@ o-d path, K resources
 =#
 
 ## Import relevant packages
+using BenchmarkTools
 using ConstrainedShortestPaths
 using Graphs, SparseArrays
 using Random
@@ -58,3 +59,12 @@ c = sum(d[p[i], p[i+1]] for i in eachindex(p[1:end-1]))
     For the usual shortest path, it's probably better to use directly one of the
     shortest paths algorithms from [Graphs.jl](https://juliagraphs.org/Graphs.jl/dev/algorithms/shortestpaths/#Shortest-paths)
 =#
+
+@benchmark basic_shortest_path(g, d)
+
+#
+
+@benchmark begin
+    p = enumerate_paths(bellman_ford_shortest_paths(g, 1, d), nb_vertices)
+    c = sum(d[p[i], p[i+1]] for i in eachindex(p[1:end-1]))
+end
