@@ -1,6 +1,6 @@
 name = "ConstrainedShortestPaths"
 uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
-authors = ["BatyLeo and contributors"]
+authors = ["Léo Baty and contributors"]
 version = "0.1.0"
 
 [deps]

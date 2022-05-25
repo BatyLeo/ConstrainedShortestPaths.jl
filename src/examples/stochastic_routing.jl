@@ -59,10 +59,15 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     return StochasticForwardResource(new_c, new_xi, new_λ)
 end
 
+function _backward_scenario(g::PiecewiseLinear, delay::Float64, slack::Float64)
+    f = PiecewiseLinear(1.0, slack, delay)
+    return f + compose(g, f)
+end
+
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
     return StochasticBackwardResource(
-        [PiecewiseLinear(1.0, slack, delay) + compose(g, PiecewiseLinear(1.0, slack, delay))
-            for (delay, g, slack) in zip(f.delays, q.g, f.slacks)],
+        [_backward_scenario(g, delay, slack)
+            for (g, delay, slack) in zip(q.g, f.delays, f.slacks)],
         f.λ_value + q.λ
     )
 end

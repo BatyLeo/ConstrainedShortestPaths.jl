@@ -18,6 +18,7 @@ using SparseArrays
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
         @test c_star == 0.0
+        @test path_cost(p_star, slack_matrix, delays) == c_star
     end
 
     @testset "No slack" begin
@@ -28,6 +29,7 @@ using SparseArrays
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
         @test c_star == 8
+        @test path_cost(p_star, slack_matrix, delays) == c_star
     end
 
     @testset "With slack" begin
@@ -38,6 +40,7 @@ using SparseArrays
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
         @test c_star == 8
+        @test path_cost(p_star, slack_matrix, delays) == c_star
     end
 
     @testset "With slack" begin
@@ -48,6 +51,7 @@ using SparseArrays
         slack_matrix = sparse(I, J, slacks)
         (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays)
         @test c_star == 1.0
+        @test path_cost(p_star, slack_matrix, delays) == c_star
     end
 end
 
@@ -161,7 +165,7 @@ end
 
                 delays = rand(nb_vertices, nb_scenarios) * 10
                 delays[end, :] .= 0.0
-                slacks_theory = [e.dst == nb_vertices ? [Inf for _ in 1:nb_scenarios] : [rand() * 10 for _ in 1:nb_scenarios] for e in edges(graph)]
+                slacks_theory = [dst(e) == nb_vertices ? [Inf for _ in 1:nb_scenarios] : [rand() * 10 for _ in 1:nb_scenarios] for e in edges(graph)]
                 slack_matrix = sparse(I, J, slacks_theory)
 
                 # Column generation using constrained shortest path algorithm
@@ -171,7 +175,32 @@ end
                 # Exact resolution
                 obj, sol = solve_scenarios(graph, slack_matrix, delays)
 
-                @test obj ≈ obj2 || obj >= obj2
+                obj3, y3 = column_generation(graph, slack_matrix, delays, cat(paths, initial_paths; dims=1))
+                # obj4, y4 = column_generation(graph, slack_matrix, delays, cat(paths, initial_paths; dims=1); bin=false)
+                # obj5, y5 = column_generation(graph, slack_matrix, delays, initial_paths; bin=false)
+
+                #@info "Objs" obj2 obj
+                # @info [dual[p] for p in initial_paths]
+                # init = [p for p in initial_paths if dual[p] == 1.0]
+                # @info dual_new
+                # new = [paths[i] for i in eachindex(dual_new) if dual_new[i] == 1.0]
+                # @info value
+                # for p in init
+                #     @info "sum $p" sum(value[i] for i in p) path_cost(p, slack_matrix, delays)
+                # end
+                # for p in new
+                #     @info "sum $p" sum(value[i] for i in p) path_cost(p, slack_matrix, delays)
+                # end
+
+                # @info "" value[1] value[end]
+                @info "" obj obj2 obj3
+
+                @test obj ≈ obj2 || obj > obj2
+                @test obj ≈ obj3 || obj3 > obj
+
+                if !(obj ≈ obj2)
+                    @info "Not equal" obj obj2
+                end
             end
         end
     end

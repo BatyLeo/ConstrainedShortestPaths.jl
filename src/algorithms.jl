@@ -31,6 +31,7 @@ aa
     nb_vertices = nv(instance.graph)
 
     vertices_order = topological_order(graph)
+    #@info "Order" vertices_order
     bounds = [instance.destination_backward_resource for _ = 1:nb_vertices]
     for vertex in vertices_order[2:end]
         vector = [instance.backward_functions[vertex, neighbor](bounds[neighbor])
@@ -103,6 +104,6 @@ Compute shortest path between first and last nodes of `instance`
     instance::RCSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
     bounds = compute_bounds(instance)
-    #@info "Bounds" bounds
+    # @info "Bounds" bounds
     return generalized_A_star(instance, bounds)
 end

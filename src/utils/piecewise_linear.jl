@@ -15,7 +15,7 @@ struct PiecewiseLinear
     break_y::Vector{Float64}
 end
 
-function PiecewiseLinear(final_slope::Real, slack::Real, delay::Real)
+function PiecewiseLinear(final_slope::Float64, slack::Float64, delay::Float64)
     if slack == Inf
         return PiecewiseLinear(0.0, [0.0], [delay])
     end
@@ -63,43 +63,45 @@ function (f::PiecewiseLinear)(x::Real)
     return y1 + (y2 - y1) * (x - x1) / (x2 - x1)
 end
 
+# TODO: remove this workaround
+function my_push!(v::AbstractVector, element)
+    if element[end] != v
+        push!(v, element)
+    end
+    return nothing
+end
+
 """
     +(f1, f2)
 
 Return a PiecewiseLinear corresponding to f1 + f2.
 """
 function +(f1::PiecewiseLinear, f2::PiecewiseLinear)
-    x_list = sort(unique(cat(f1.break_x, f2.break_x; dims=1)))
-    y_list = [f1(x) + f2(x) for x in x_list]
+    #x_list_base = sort(unique(cat(f1.break_x, f2.break_x; dims=1)))
     slope = f1.final_slope + f2.final_slope
 
-    # i1_max = length(f1.break_x)
-    # i2_max = length(f2.break_x)
+    x_list = Float64[]
+    i2_max = length(f2.break_x)
+    i1_max = length(f1.break_x)
+    i1, i2 = 1, 1
+    x_max = max(maximum(f1.break_x), maximum(f2.break_x)) + 10
+    while i1 <= i1_max || i2 <= i2_max
+        x1 = get_x(f1, i1; x_max=x_max)
+        x2 = get_x(f2, i2; x_max=x_max)
+        if x1 < x2
+            my_push!(x_list, x1)
+            i1 += 1
+        elseif x1 > x2
+            my_push!(x_list, x2)
+            i2 += 1
+        else # if x1 == x2
+            my_push!(x_list, x1)
+            i1 += 1
+            i2 += 1
+        end
+    end
 
-    # x_list = Float64[]
-    # y_list = Float64[]
-    # i1, i2 = 1, 1
-    # while i1 <= i1_max || i2 <= i2_max
-    #     x1 = get_x(f1, i1)
-    #     x2 = get_x(f2, i2)
-    #     if x1 < x2
-    #         y = f1(x1) + f2(x1)
-    #         push!(x_list, x1)
-    #         push!(y_list, y)
-    #         i1 += 1
-    #     elseif x1 > x2
-    #         y = f1(x2) + f2(x2)
-    #         push!(x_list, x2)
-    #         push!(y_list, y)
-    #         i2 += 2
-    #     else # if x1 == x2
-    #         y = f1(x1) + f2(x1)
-    #         push!(x_list, x1)
-    #         push!(y_list, y)
-    #         i1 += 1
-    #         i2 += 1
-    #     end
-    # end
+    y_list = [f1(x) + f2(x) for x in x_list] # TODO: optimizable
     return PiecewiseLinear(slope, x_list, y_list)
 end
 
@@ -110,13 +112,13 @@ Return a PiecewiseLinear corresponding to f1 ∘ f2
 ! only support functions with only one break point and final slope 1
 """
 function compose(f1::PiecewiseLinear, f2::PiecewiseLinear)
-    x_list = []
-    y_list = []
+    x_list = Float64[]
+    y_list = Float64[]
     for (i, x1) in enumerate(f2.break_x)
         x2 = get_x(f2, i+1)
         y1, y2 = f2(x1), f2(x2)
-        push!(x_list, x1)
-        push!(y_list, f1(y1))
+        my_push!(x_list, x1)
+        my_push!(y_list, f1(y1))
         a = (y2 - y1) / (x2 - x1)
         if a == 0
             continue
@@ -127,8 +129,8 @@ function compose(f1::PiecewiseLinear, f2::PiecewiseLinear)
         for j in jmin:jmax
             x̄ = f1.break_x[j]
             x = (x̄ - b) / a
-            push!(x_list, x)
-            push!(y_list, f1(x̄))
+            my_push!(x_list, x)
+            my_push!(y_list, f1(x̄))
         end
     end
     return PiecewiseLinear(f1.final_slope * f2.final_slope, x_list, y_list)
@@ -247,78 +249,80 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
     i1 = 0
     i2 = 0
 
+    x_max = max(maximum(f1.break_x), maximum(f2.break_x)) + 10
     i1_max = length(f1.break_x)
     i2_max = length(f2.break_x)
     while i1 < i1_max || i2 < i2_max
+        #@warn "i" i1 i2 i1_max i2_max f1 f2
         i1 = min(i1, i1_max)
         i2 = min(i2, i2_max)
         x = intersection(f1, f2, i1, i2)
         if x == -1
             # advance the function advancing less
-            x1 = get_x(f1, i1 + 1)
-            x2 = get_x(f2, i2 + 1)
+            x1 = get_x(f1, i1 + 1; x_max=x_max)
+            x2 = get_x(f2, i2 + 1; x_max=x_max)
             if x1 < x2
                 i1 += 1
                 y1, y2 = f1(x1), f2(x1)
                 if y1 < y2
-                    push!(x_list, x1)
-                    push!(y_list, y1)
+                    my_push!(x_list, x1)
+                    my_push!(y_list, y1)
                 end
             elseif x1 > x2
                 i2 += 1
                 y1, y2 = f1(x2), f2(x2)
                 if y2 < y1
-                    push!(x_list, x2)
-                    push!(y_list, y2)
+                    my_push!(x_list, x2)
+                    my_push!(y_list, y2)
                 end
             else # if x1 == x2
                 i1 += 1
                 i2 += 1
-                x = get_x(f1, i1)
+                x = get_x(f1, i1; x_max=x_max)
                 y = min(f1(x), f2(x))
-                push!(x_list, x)
-                push!(y_list, y)
+                my_push!(x_list, x)
+                my_push!(y_list, y)
             end
         else  # if there is an intersection
             # add intersection
-            push!(x_list, x)
-            push!(y_list, f1(x)) # = f2(x)
+            my_push!(x_list, x)
+            my_push!(y_list, f1(x)) # = f2(x)
             # advance the function advancing less
-            x1 = get_x(f1, i1 + 1)
-            x2 = get_x(f2, i2 + 1)
+            x1 = get_x(f1, i1 + 1; x_max=x_max)
+            x2 = get_x(f2, i2 + 1; x_max=x_max)
             if x1 < x2
                 i1 += 1
                 y11, y21 = f1(x1), f2(x1)
                 y22 = f2(x2)
                 if y11 <= y21 && y11 <= y22 && x != x1
-                    push!(x_list, x1)
-                    push!(y_list, y11)
+                    my_push!(x_list, x1)
+                    my_push!(y_list, y11)
                 elseif y11 >= y21 && y11 >= y22 && x != x1
                     i2 += 1
-                    push!(x_list, x2)
-                    push!(y_list, y22)
+                    my_push!(x_list, x2)
+                    my_push!(y_list, y22)
                 end
             elseif x1 > x2
                 i2 += 1
                 y12, y22 = f1(x2), f2(x2)
                 y21 = f1(x1)
                 if y22 <= y12 && y22 <= y21 && x != x1
-                    push!(x_list, x2)
-                    push!(y_list, y22)
+                    my_push!(x_list, x2)
+                    my_push!(y_list, y22)
                 elseif y22 >= y12 && y22 >= y21 && x != x1
                     i1 += 1
-                    push!(x_list, x1)
-                    push!(y_list, y21)
+                    my_push!(x_list, x1)
+                    my_push!(y_list, y21)
                 end
             else # if x1 == x2
                 i1 += 1
                 i2 += 1
 
-                x1 = get_x(f1, i1)
+                x1 = get_x(f1, i1; x_max=x_max)
                 if x1 != x
                     y = min(f1(x), f2(x))
-                    push!(x_list, x)
-                    push!(y_list, y)
+                    my_push!(x_list, x)
+                    my_push!(y_list, y)
                 end
             end
         end
@@ -327,8 +331,8 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
 
     x = intersection(f1, f2, i1_max, i2_max)
     if x != -1
-        push!(x_list, x)
-        push!(y_list, f1(x))
+        my_push!(x_list, x)
+        my_push!(y_list, f1(x))
     end
 
     if x_list == []
