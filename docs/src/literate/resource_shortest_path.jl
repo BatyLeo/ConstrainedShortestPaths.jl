@@ -1,4 +1,4 @@
-# # Resource constrained shortest path
+# # Shortest path with linear resource constraints
 
 #=
 o-d path, K resources

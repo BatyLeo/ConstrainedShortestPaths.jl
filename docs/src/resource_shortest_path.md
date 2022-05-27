@@ -2,7 +2,7 @@
 EditURL = "<unknown>/docs/src/literate/resource_shortest_path.jl"
 ```
 
-# Resource constrained shortest path
+# Shortest path with linear resource constraints
 
 o-d path, K resources
 ```math

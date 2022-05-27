@@ -38,9 +38,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Tutorial" => ["$tuto.md" for tuto in tuto_list[1:end-1]],
-        "Mathematical background" => ["setting.md", "algorithms.md", "examples.md"],
-        "$(tuto_list[end]).md",
+        "maths.md",
+        "Tutorial" => ["$tuto.md" for tuto in tuto_list[1:end]],
+        #"$(tuto_list[end]).md",
         "api.md",
     ],
 )
