@@ -1,22 +1,47 @@
 # # Implement a custom problem
 
 #=
-!!! warning
-    Work in progress
+In this tutorial, you will learn how to use this package to solve your own custom
+constrained shortest path problem.
+
+First of all, make sure you read the [Mathematical background](@ref). In order to use the
+[`generalized_constrained_shortest_path`](@ref) on your custom problem, you need to
+define a few different types and methods:
+- Types that need to be implemented:
+    - Resources types (backward and forward)
+    - Expansion functions (backward and forward)
+- Methods that need to be implemented:
+    - `Base.<=` between two forward resources
+    - `Base.minimum` of a vector of backward resources
+    - Make forward functions callable on forward resources
+    - Make backward function callable on backward resources
+    - A callable cost function
+
+You can checkout examples already implemented in the [`src/examples`](https://github.com/BatyLeo/ConstrainedShortestPaths.jl/tree/main/src/examples)
+folder of this package.
+
+## Example on the unidimensional resource shortest path
+
+We illustrate this on the same problem a in [Shortest path with linear resource constraints](@ref)
+but simplified with only one constraint.
+
 =#
 
 using ConstrainedShortestPaths
 using Graphs, SparseArrays
 import Base: <=, minimum
 
-# ## Resources
+#=
+## Resources
 
+Forward and backward resources for this example are in the same space:
+=#
 struct Resource
     c::Float64
     w::Float64
 end
 
-#
+# `Base.<=` and `Base.minimum`
 
 function <=(r1::Resource, r2::Resource)
     return r1.c <= r2.c && r1.w <= r2.w
@@ -26,7 +51,11 @@ function minimum(R::Vector{Resource})
     return Resource(minimum(r.c for r in R), minimum(r.w for r in R))
 end
 
-# ## Expansion functions
+#=
+## Expansion functions
+
+Same as the resources, the forward and backward expansion functions coincide in this example.
+=#
 
 struct ExpansionFunction
     c::Float64
@@ -48,7 +77,7 @@ function (cost::Cost)(fr::Resource, br::Resource)
     return fr.w + br.w <= cost.W ? fr.c + br.c : Inf
 end
 
-# ## Test
+# ## Test on an instance
 
 nb_vertices = 4
 graph = SimpleDiGraph(nb_vertices)
@@ -79,4 +108,5 @@ f = [ExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
 F = sparse(If, Jf, f);
 
 instance = RCSPInstance(graph, resource, resource, Cost(W), F, F)
-p_star, c_star = generalized_constrained_shortest_path(instance)
+(; p_star, c_star) = generalized_constrained_shortest_path(instance)
+@info "Result" c_star p_star
