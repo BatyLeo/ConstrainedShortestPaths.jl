@@ -5,7 +5,7 @@ function random_acyclic_digraph(nb_vertices::Integer; p=0.4, all_connected_to_so
             push!(edge_list, (u, u+1))
         end
 
-        for v in (u+1):nb_vertices
+        for v in (u+1):(u == 1 ? nb_vertices-1 : nb_vertices)
             if rand() <= p
                 push!(edge_list, (u, v))
             end
@@ -104,26 +104,24 @@ function stochastic_PLNE(g, slacks, delays, initial_paths)
 
     while true
         optimize!(model)
+        #@info "Objective" objective_value(model)
         λ_val = value.(λ)
-        #@info "Input" slacks delays λ_val
         (; c_star, p_star) = stochastic_routing_shortest_path(
             g, slacks, delays, λ_val
         )
-        #@info "Adding" c_star+vehicle_cost p_star path_cost(p_star, slacks, delays) - sum(λ_val[v] for v in p_star) λ_val
+        full_cost = c_star + vehicle_cost + sum(λ_val[v] for v in job_indices if v in p_star)
+        @assert path_cost(p_star, slacks, delays) + vehicle_cost ≈ full_cost
         if c_star + vehicle_cost > -eps
             break
         end
-        # elseif c_star < 0
-        @assert c_star + vehicle_cost < 0
         push!(new_paths, p_star)
         push!(cons, @constraint(
             model,
-            path_cost(p_star, slacks, delays) -
-                sum(λ[v] for v in job_indices if v in p_star) >= 0
+            full_cost - sum(λ[v] for v in job_indices if v in p_star) >= 0
         ))
     end
 
-    #@warn "Dual" dual_objective_value(model)
+    #@info "Dual Objective" dual_objective_value(model)
 
     return value.(λ), objective_value(model), new_paths, dual.(con), dual.(cons)
 end
@@ -135,7 +133,7 @@ function column_generation(g, slacks, delays, paths::Vector{Vector{Int}}; bin=tr
     model = Model(GLPK.Optimizer)
 
     if bin
-        @variable(model, y[p in paths], Bin)# >= 0)
+        @variable(model, y[p in paths], Bin)
     else
         @variable(model, y[p in paths] >= 0)
     end
