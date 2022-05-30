@@ -27,5 +27,3 @@ To install this package, open a julia REPL and run the following command in pkg 
 ```bash
 add https://github.com/BatyLeo/ConstrainedShortestPaths.jl
 ```
-
-> Note: this package is still in a development stage, so use it at your own risk!

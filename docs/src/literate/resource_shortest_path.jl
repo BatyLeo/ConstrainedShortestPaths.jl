@@ -1,12 +1,12 @@
 # # Shortest path with linear resource constraints
 
 #=
-o-d path, K resources
+In this tutorial we want to solve the following resource constrained shortest path:
 ```math
-\boxed{\begin{aligned}
-\min_{p\in \mathcal{P_{od}}} & \sum_{a\in p} d_a & \\
+\begin{aligned}
+\min_{p\in \mathcal{P_{od}}} & \sum_{a\in p} c_a & \\
 s.t. & \sum_{a\in p} w_a^k \leq W^k, & \forall k \in [K]
-\end{aligned}}
+\end{aligned}
 ```
 =#
 
@@ -14,7 +14,7 @@ using ConstrainedShortestPaths
 using Graphs, SparseArrays
 using GLMakie, GraphMakie
 
-# Let's create a simple graph in order to test our wrappers:
+# Let's create a simple graph:
 
 nb_vertices = 4
 graph = SimpleDiGraph(nb_vertices)

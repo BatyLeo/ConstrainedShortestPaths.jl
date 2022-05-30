@@ -22,7 +22,7 @@ end
 """
     compute_bounds(instance)
 
-aa
+Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
 @traitfn function compute_bounds(
     instance::RCSPInstance{G}
@@ -45,7 +45,8 @@ end
 """
     generalized_A_star(instance, bounds)
 
-aa
+Perform generalized A star algorithm on instnace using bounds
+(see [Generalized `A^\\star`](@ref)).
 """
 @traitfn function generalized_A_star(
     instance::RCSPInstance{G}, bounds::AbstractVector

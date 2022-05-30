@@ -8,6 +8,8 @@ Documentation for [ConstrainedShortestPaths](https://github.com/BatyLeo/Constrai
 
 This package implements algorithms for solving **Generalized Constrained Shortest Paths** problems. It implements a simplified version of the framework from [Parmentier 2017](https://arxiv.org/abs/1504.07880), restricted to acyclic directed graphs.
 
+If you have any question/suggestion, feel free to [create an issue](https://github.com/BatyLeo/ConstrainedShortestPaths.jl/issues/new/choose) or [contact me](mailto:leo.baty@enpc.fr).
+
 ## Overview
 
 This package supports the following setting:

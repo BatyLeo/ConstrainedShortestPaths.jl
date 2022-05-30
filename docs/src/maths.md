@@ -92,9 +92,6 @@ Proposition : the solution is a lower bound (it's even the greater: ``q_{b_v} = 
 
 ## Examples
 
-!!! warning
-    Work in progress
-
 ### Shortest path
 - ``q_o^F = 0,\, q^B_d = 0``
 - ``f^F_a(q) = f^B_a(q) = c_a + q``
