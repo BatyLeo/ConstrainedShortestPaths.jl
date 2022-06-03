@@ -25,5 +25,5 @@ See the [documentation](https://batyleo.github.io/ConstrainedShortestPaths.jl) f
 To install this package, open a julia REPL and run the following command in pkg mode:
 
 ```bash
-add https://github.com/BatyLeo/ConstrainedShortestPaths.jl
+add ConstrainedShortestPaths
 ```

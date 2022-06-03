@@ -32,7 +32,7 @@ The [`generalized_constrained_shortest_path`](@ref) algorithm is able to solve t
 To install this package, open a julia REPL and run the following command in pkg mode:
 
 ```bash
-add https://github.com/BatyLeo/ConstrainedShortestPaths.jl
+add ConstrainedShortestPaths
 ```
 
 ---
