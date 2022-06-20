@@ -193,13 +193,13 @@ end
                 # end
 
                 # @info "" value[1] value[end]
-                @info "" obj obj2 obj3
+                # @info "" obj obj2 obj3
 
                 @test obj ≈ obj2 || obj > obj2
                 @test obj ≈ obj3 || obj3 > obj
 
                 if !(obj ≈ obj2)
-                    @info "Not equal" obj obj2
+                    @info "Not equal" obj obj2 obj3
                 end
             end
         end
