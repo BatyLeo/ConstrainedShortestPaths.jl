@@ -9,25 +9,6 @@ DocMeta.setdocmeta!(
     recursive=true
 )
 
-# Copy README.md into docs/src/index.md (overwriting)
-
-open(joinpath(@__DIR__, "src", "index.md"), "w") do io
-    println(
-        io,
-        """
-        ```@meta
-        EditURL = "https://github.com/BatyLeo/ConstrainedShortestPaths.jl/blob/main/README.md"
-        ```
-        """,
-    )
-    # Write the contents out below the meta bloc
-    for line in eachline(joinpath(dirname(@__DIR__), "README.md"))
-        println(io, line)
-    end
-end
-
-# Tutorials with literates
-
 md_dir = joinpath(@__DIR__, "src")
 jl_dir = joinpath(md_dir, "literate")
 
