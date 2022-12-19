@@ -34,7 +34,7 @@ Compute shortest path between first and last vertices of graph `g`.
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function basic_shortest_path(
-    g::G, distmx::AbstractMatrix=weights(g)
+    g::G, s, t, distmx::AbstractMatrix=weights(g)
 ) where {G <: AbstractGraph; IsDirected{G}}
     # origin forward resource and backward forward resource set to 0
     resource = 0.0
@@ -45,6 +45,12 @@ Compute shortest path between first and last vertices of graph `g`.
     f = [BSPExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
     F = sparse(If, Jf, f)
 
-    instance = RCSPInstance(g, resource, resource, BSP_cost, F, F)
-    return generalized_constrained_shortest_path(instance)
+    instance = CSPInstance(g, resource, resource, BSP_cost, F, F)
+    return generalized_constrained_shortest_path(instance, s, t)
+end
+
+@traitfn function basic_shortest_path(
+    g::G, distmx::AbstractMatrix=weights(g)
+) where {G <: AbstractGraph; IsDirected{G}}
+    return basic_shortest_path(g, 1, nv(g), distmx)
 end

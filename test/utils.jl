@@ -21,8 +21,8 @@ function random_acyclic_digraph(nb_vertices::Integer; p=0.4, all_connected_to_so
 end
 
 function resource_PLNE(g, d, c, C)
-    model = Model(Cbc.Optimizer)
-    set_optimizer_attribute(model, "logLevel", 0)
+    model = Model(GLPK.Optimizer)
+    #set_optimizer_attribute(model, "logLevel", 0)
 
     nb_vertices = nv(g)
     nodes = 1:nb_vertices
@@ -164,8 +164,8 @@ function solve_scenarios(graph, slacks, delays)
     Ω = 1:nb_scenarios
 
     # Model definition
-    model = Model(Cbc.Optimizer)
-    set_optimizer_attribute(model, "logLevel", 0)
+    model = Model(GLPK.Optimizer)
+    #set_optimizer_attribute(model, "logLevel", 0)
 
     # Variables and objective function
     @variable(model, y[u in nodes, v in nodes; has_edge(graph, u, v)], Bin)

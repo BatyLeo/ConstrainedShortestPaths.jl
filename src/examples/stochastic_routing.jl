@@ -110,6 +110,6 @@ Compute stochastic routing shortest path between first and last vertices of grap
     FF = sparse(I, J, ff)
     BB = sparse(I, J, bb)
 
-    instance = RCSPInstance(g, origin_forward_resource, destination_backward_resource, stochastic_cost, FF, BB)
+    instance = CSPInstance(g, origin_forward_resource, destination_backward_resource, stochastic_cost, FF, BB)
     return generalized_constrained_shortest_path(instance)
 end

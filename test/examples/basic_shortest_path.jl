@@ -39,8 +39,11 @@ end
         Jw = [dst(e) for e in edges(graph)]
         w = sparse(Iw, Jw, weight_list, nb_vertices, nb_vertices)
 
-        p_star, c_star = basic_shortest_path(graph, w)
-        p = enumerate_paths(bellman_ford_shortest_paths(graph, 1, w), nb_vertices)
+        s = rand(1:nb_vertices-1)
+        t = rand(s+1:nb_vertices)
+
+        p_star, c_star = basic_shortest_path(graph, s, t, w)
+        p = enumerate_paths(bellman_ford_shortest_paths(graph, s, w), t)
         c = sum(w[p[i], p[i+1]] for i in eachindex(p[1:end-1]))
         @test c_star == c
         @test p_star == p

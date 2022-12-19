@@ -1,7 +1,6 @@
 using ConstrainedShortestPaths
 using Test
 
-using Cbc
 using GLPK
 using Graphs
 using JuMP

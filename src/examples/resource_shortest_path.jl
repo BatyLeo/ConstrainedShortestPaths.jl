@@ -68,7 +68,7 @@ Compute resource contrained shortest path between first and last vertices of gra
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function resource_shortest_path(
-    g::G, max_costs::AbstractVector, distmx::AbstractMatrix, costmx::Array{Float64, 3}
+    g::G, max_costs::AbstractVector, s, t, distmx::AbstractMatrix, costmx::Array{Float64, 3}
 ) where {G <: AbstractGraph; IsDirected{G}}
     # origin forward resource and backward forward resource set to 0
     resource = RSPResource(0., zero(max_costs))
@@ -79,6 +79,12 @@ Compute resource contrained shortest path between first and last vertices of gra
     f = [RSPFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
     F = sparse(If, Jf, f)
 
-    instance = RCSPInstance(g, resource, resource, RSPCost(max_costs), F, F)
-    return generalized_constrained_shortest_path(instance)
+    instance = CSPInstance(g, resource, resource, RSPCost(max_costs), F, F)
+    return generalized_constrained_shortest_path(instance, s, t)
+end
+
+@traitfn function resource_shortest_path(
+    g::G, max_costs::AbstractVector, distmx::AbstractMatrix, costmx::Array{Float64, 3}
+) where {G <: AbstractGraph; IsDirected{G}}
+    return resource_shortest_path(g, max_costs, s, t, distmx, costmx)
 end
