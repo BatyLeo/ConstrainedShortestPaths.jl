@@ -34,8 +34,8 @@ Compute shortest path between vertices `s` and `t` of graph `g`.
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function basic_shortest_path(
-    g::G, s, t, distmx::AbstractMatrix=weights(g)
-) where {G <: AbstractGraph; IsDirected{G}}
+    g::G, s::T, t::T, distmx::AbstractMatrix=weights(g)
+) where {T, G <: AbstractGraph{T}; IsDirected{G}}
     # origin forward resource and backward forward resource set to 0
     resource = 0.0
 
