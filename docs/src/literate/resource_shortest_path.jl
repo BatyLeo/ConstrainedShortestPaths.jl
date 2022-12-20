@@ -32,17 +32,18 @@ We now add resource costs ``w_a`` on edges,
 and a resource constraint of the form: ``\sum\limits_{a\in P} w_a \leq W``
 =#
 
-W = [1.]
+W = [1.0]
 cost_list = [[0], [0], [10], [0], [0]]
-w = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
+w = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
 for ((i, j), c) in zip(edge_list, cost_list)
     w[i, j, :] = c
 end
 
-graphplot(graph;
+graphplot(
+    graph;
     node_color=:red,
     nlabels=["$i" for i in 1:nb_vertices],
-    elabels=["d=$(d[e.src, e.dst]), w=$(w[e.src, e.dst, :])" for e in edges(graph)]
+    elabels=["d=$(d[e.src, e.dst]), w=$(w[e.src, e.dst, :])" for e in edges(graph)],
 )
 
 # With these costs, the optimal path should be [1, 2, 4], with length 2.

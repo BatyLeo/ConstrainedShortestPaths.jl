@@ -83,7 +83,9 @@ end
         @test p_star == [1, 2, 4, 5]
         @test path_cost(p_star, slack_matrix, delays) == c_star
 
-        (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays, λ)
+        (; c_star, p_star) = stochastic_routing_shortest_path(
+            graph, slack_matrix, delays, λ
+        )
         @test c_star == -3
         @test p_star == [1, 2, 3, 4, 5]
     end
@@ -99,7 +101,9 @@ end
         @test p_star == [1, 3, 4, 5]
         @test path_cost(p_star, slack_matrix, delays) == c_star
 
-        (; c_star, p_star) = stochastic_routing_shortest_path(graph, slack_matrix, delays, λ)
+        (; c_star, p_star) = stochastic_routing_shortest_path(
+            graph, slack_matrix, delays, λ
+        )
         @test c_star == 0
         @test p_star == [1, 3, 4, 5]
     end
@@ -157,7 +161,9 @@ end
         for nb_vertices in 10:15
             for i in 1:n
                 Random.seed!(i)
-                graph = random_acyclic_digraph(nb_vertices; all_connected_to_source_and_destination=true)
+                graph = random_acyclic_digraph(
+                    nb_vertices; all_connected_to_source_and_destination=true
+                )
 
                 nb_edges = ne(graph)
                 I = [src(e) for e in edges(graph)]
@@ -165,17 +171,27 @@ end
 
                 delays = rand(nb_vertices, nb_scenarios) * 10
                 delays[end, :] .= 0.0
-                slacks_theory = [dst(e) == nb_vertices ? [Inf for _ in 1:nb_scenarios] : [rand() * 10 for _ in 1:nb_scenarios] for e in edges(graph)]
+                slacks_theory = [
+                    if dst(e) == nb_vertices
+                        [Inf for _ in 1:nb_scenarios]
+                    else
+                        [rand() * 10 for _ in 1:nb_scenarios]
+                    end for e in edges(graph)
+                ]
                 slack_matrix = sparse(I, J, slacks_theory)
 
                 # Column generation using constrained shortest path algorithm
-                initial_paths = [[1, v, nb_vertices] for v in 2:nb_vertices-1]
-                value, obj2, paths, dual, dual_new = stochastic_PLNE(graph, slack_matrix, delays, initial_paths)
+                initial_paths = [[1, v, nb_vertices] for v in 2:(nb_vertices - 1)]
+                value, obj2, paths, dual, dual_new = stochastic_PLNE(
+                    graph, slack_matrix, delays, initial_paths
+                )
 
                 # Exact resolution
                 obj, sol = solve_scenarios(graph, slack_matrix, delays)
 
-                obj3, y3 = column_generation(graph, slack_matrix, delays, cat(paths, initial_paths; dims=1))
+                obj3, y3 = column_generation(
+                    graph, slack_matrix, delays, cat(paths, initial_paths; dims=1)
+                )
                 # obj4, y4 = column_generation(graph, slack_matrix, delays, cat(paths, initial_paths; dims=1); bin=false)
                 # obj5, y5 = column_generation(graph, slack_matrix, delays, initial_paths; bin=false)
 

@@ -1,5 +1,5 @@
 """
-    RCSPInstance{G,FR,BR,C,FF,BF}
+    CSPInstance{G,FR,BR,C,FF,BF}
 
 # Attributes
 
@@ -10,7 +10,7 @@
 - `forward_functions`:
 - `backward_functions`:
 """
-struct RCSPInstance{G,FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix}
+struct CSPInstance{G,FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix}
     graph::G  # assumption : node 1 is origin, last node is destination
     origin_forward_resource::FR
     destination_backward_resource::BR
@@ -25,16 +25,19 @@ end
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
 @traitfn function compute_bounds(
-    instance::RCSPInstance{G}
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{G}, s::T, t::T
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(instance.graph)
 
-    vertices_order = topological_order(graph)
-    bounds = [instance.destination_backward_resource for _ = 1:nb_vertices]
+    vertices_order = topological_order(graph, s, t)
+    bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
+    bounds[t] = instance.destination_backward_resource
     for vertex in vertices_order[2:end]
-        vector = [instance.backward_functions[vertex, neighbor](bounds[neighbor])
-            for neighbor in outneighbors(graph, vertex)]
+        vector = [
+            instance.backward_functions[vertex, neighbor](bounds[neighbor]) for
+            neighbor in outneighbors(graph, vertex)
+        ]
         bounds[vertex] = minimum(vector)
     end
 
@@ -42,30 +45,31 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
 end
 
 """
-    generalized_A_star(instance, bounds)
+    generalized_A_star(instance, s, t, bounds)
 
 Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
 @traitfn function generalized_A_star(
-    instance::RCSPInstance{G}, bounds::AbstractVector
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{G}, s::T, t::T, bounds::AbstractVector
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(graph)
 
-    origin = 1
-    empty_path = [origin]
+    empty_path = [s]
 
     forward_resources = Dict(empty_path => instance.origin_forward_resource)
     L = PriorityQueue{Vector{Int},Float64}(
-        empty_path => instance.cost_function(forward_resources[empty_path], bounds[origin])
+        empty_path => instance.cost_function(forward_resources[empty_path], bounds[s])
     )
-    M = [typeof(forward_resources[empty_path])[] for _ in 1:nb_vertices]
-    push!(M[origin], forward_resources[empty_path])
-    c_star = Inf
-    p_star = [origin]  # undef
 
-    while length(L) > 0
+    forward_type = typeof(forward_resources[empty_path])
+    M = [forward_type[] for _ in 1:nb_vertices]
+    push!(M[s], forward_resources[empty_path])
+    c_star = Inf
+    p_star = [s]
+
+    while !isempty(L)
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
@@ -75,8 +79,8 @@ Perform generalized A star algorithm on instnace using bounds
             rq = instance.forward_functions[v, w](rp)
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
-            if c < c_star
-                if w == nb_vertices # if destination is reached
+            if c < c_star # cut using bounds
+                if w == t # if destination is reached
                     c_star = c
                     p_star = copy(q)
                 elseif !is_dominated(rq, M[w]) # else add path to queue if not dominated
@@ -97,7 +101,7 @@ Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
 @traitfn function generalized_A_star_with_threshold(
-    instance::RCSPInstance{G}, bounds::AbstractVector, threshold::Float64
+    instance::CSPInstance{G}, bounds::AbstractVector, threshold::Float64
 ) where {G <: AbstractGraph; IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(graph)
@@ -137,15 +141,26 @@ Perform generalized A star algorithm on instnace using bounds
 end
 
 """
-    generalized_constrained_shortest_path(instance)
+    generalized_constrained_shortest_path(instance, s, t)
 
-Compute shortest path between first and last nodes of `instance`
+Compute the shortest path between nodes `s`and `t` of `instance`.
 """
 @traitfn function generalized_constrained_shortest_path(
-    instance::RCSPInstance{G}
+    instance::CSPInstance{G}, s::T, t::T
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
+    bounds = compute_bounds(instance, s, t)
+    return generalized_A_star(instance, s, t, bounds)
+end
+
+"""
+    generalized_constrained_shortest_path(instance)
+
+Compute the shortest path between first and last nodes of `instance`.
+"""
+@traitfn function generalized_constrained_shortest_path(
+    instance::CSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}
-    bounds = compute_bounds(instance)
-    return generalized_A_star(instance, bounds)
+    return generalized_constrained_shortest_path(instance, 1, nv(instance.graph))
 end
 
 """
@@ -154,8 +169,8 @@ end
 Compute shortest path between first and last nodes of `instance`
 """
 @traitfn function generalized_constrained_shortest_path_with_threshold(
-    instance::RCSPInstance{G}, threshold::Float64
+    instance::CSPInstance{G}, threshold::Float64
 ) where {G <: AbstractGraph; IsDirected{G}}
-    bounds = compute_bounds(instance)
+    bounds = compute_bounds(instance, 1, nv(instance.graph))
     return generalized_A_star_with_threshold(instance, bounds, threshold)
 end

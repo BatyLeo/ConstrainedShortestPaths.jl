@@ -3,9 +3,9 @@
     graph = SimpleDiGraph(nb_vertices)
 
     edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
-    distance_list = [1., 2, -1., 1., 1.]
+    distance_list = [1.0, 2, -1.0, 1.0, 1.0]
     costs_dimension = 1
-    cost_list = [[0.], [0.], [10.], [0.], [0]]
+    cost_list = [[0.0], [0.0], [10.0], [0.0], [0]]
     max_cost = [1.0]
 
     for (i, j) in edge_list
@@ -16,7 +16,7 @@
     J = [dst(e) for e in edges(graph)]
     d = sparse(I, J, distance_list)
 
-    c = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
+    c = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
     for ((i, j), k) in zip(edge_list, cost_list)
         c[i, j, :] = k
     end
@@ -31,9 +31,9 @@ end
     graph = SimpleDiGraph(nb_vertices)
 
     edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
-    distance_list = [1., 0.5, -1., 1., 1.]
+    distance_list = [1.0, 0.5, -1.0, 1.0, 1.0]
     costs_dimension = 2
-    cost_list = [[0., 0.], [0., 10.], [10., 0.], [0., 0.], [0, 10.]]
+    cost_list = [[0.0, 0.0], [0.0, 10.0], [10.0, 0.0], [0.0, 0.0], [0, 10.0]]
     max_cost = [1.0, 1.0]
 
     for (i, j) in edge_list
@@ -44,7 +44,7 @@ end
     J = [dst(e) for e in edges(graph)]
     d = sparse(I, J, distance_list)
 
-    c = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
+    c = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
     for ((i, j), k) in zip(edge_list, cost_list)
         c[i, j, :] = k
     end
@@ -69,14 +69,14 @@ end
 
         cost_list = []
         for e in edges(graph)
-            if (e.dst == e.src+1)
+            if (e.dst == e.src + 1)
                 push!(cost_list, [0.0 for _ in 1:costs_dimension])
             else
-                push!(cost_list, [rand()*10 for _ in 1:costs_dimension])
+                push!(cost_list, [rand() * 10 for _ in 1:costs_dimension])
             end
         end
         max_cost = [10.0, 10.0]
-        c = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
+        c = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
         for (e, k) in zip(edges(graph), cost_list)
             c[e.src, e.dst, :] = k
         end

@@ -6,7 +6,7 @@ DocMeta.setdocmeta!(
     ConstrainedShortestPaths,
     :DocTestSetup,
     :(using ConstrainedShortestPaths);
-    recursive=true
+    recursive=true,
 )
 
 md_dir = joinpath(@__DIR__, "src")
@@ -16,12 +16,7 @@ utils_file = joinpath(md_dir, "utils.jl")
 Literate.markdown(utils_file, md_dir; documenter=true, execute=false)
 
 # last element if for custom, others are for tutorial
-tuto_list = [
-    "basic_shortest_path",
-    "resource_shortest_path",
-    "stochastic_vsp",
-    "custom",
-]
+tuto_list = ["basic_shortest_path", "resource_shortest_path", "stochastic_vsp", "custom"]
 
 for tuto in tuto_list
     jl_file = joinpath(jl_dir, "$tuto.jl")
@@ -37,7 +32,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://BatyLeo.github.io/ConstrainedShortestPaths.jl",
         assets=String[],
-        collapselevel = 1,
+        collapselevel=1,
     ),
     pages=[
         "Home" => "index.md",
@@ -48,7 +43,4 @@ makedocs(;
     ],
 )
 
-deploydocs(;
-    repo="github.com/BatyLeo/ConstrainedShortestPaths.jl",
-    devbranch="main",
-)
+deploydocs(; repo="github.com/BatyLeo/ConstrainedShortestPaths.jl", devbranch="main")
