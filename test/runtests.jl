@@ -4,6 +4,7 @@ using Test
 using GLPK
 using Graphs
 using JuMP
+using JuliaFormatter
 using Random
 using SparseArrays
 using UnicodePlots
@@ -12,15 +13,17 @@ const SHOW_PLOTS = false
 const vehicle_cost = 0.0
 const eps = 1e-10
 
+format(ConstrainedShortestPaths; verbose=true)
+
 include("utils.jl")
 
-@testset verbose=true "RCSP.jl" begin
+@testset verbose = true "RCSP.jl" begin
     @testset "PiecewiseLinear" begin
         @info "Running piecewise linear tests..."
         include("piecewise_linear.jl")
     end
 
-    @testset "Examples" verbose=true begin
+    @testset "Examples" verbose = true begin
         @testset "Basic Shortest Path" begin
             @info "Running basic shortest path tests..."
             include("examples/basic_shortest_path.jl")

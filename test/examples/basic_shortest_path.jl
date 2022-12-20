@@ -3,7 +3,7 @@
 
     graph = path_digraph(nb_vertices)
     p_star, c_star = basic_shortest_path(graph)
-    @test c_star == nb_vertices-1
+    @test c_star == nb_vertices - 1
     @test c_star == dijkstra_shortest_paths(graph, [1]).dists[end]
 end
 
@@ -12,7 +12,7 @@ end
     graph = SimpleDiGraph(nb_vertices)
 
     edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
-    weight_list = [1., 2., -1., 1., 1.]
+    weight_list = [1.0, 2.0, -1.0, 1.0, 1.0]
 
     for (i, j) in edge_list
         add_edge!(graph, i, j)
@@ -39,12 +39,12 @@ end
         Jw = [dst(e) for e in edges(graph)]
         w = sparse(Iw, Jw, weight_list, nb_vertices, nb_vertices)
 
-        s = rand(1:nb_vertices-1)
-        t = rand(s+1:nb_vertices)
+        s = rand(1:(nb_vertices - 1))
+        t = rand((s + 1):nb_vertices)
 
         p_star, c_star = basic_shortest_path(graph, s, t, w)
         p = enumerate_paths(bellman_ford_shortest_paths(graph, s, w), t)
-        c = sum(w[p[i], p[i+1]] for i in eachindex(p[1:end-1]))
+        c = sum(w[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))
         @test c_star == c
         @test p_star == p
     end

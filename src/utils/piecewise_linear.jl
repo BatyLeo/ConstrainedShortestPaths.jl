@@ -35,7 +35,7 @@ function closest_break_point(break_x::AbstractVector, x::Real; right=true)
 
     for (i, x̄) in enumerate(break_x)
         if x <= x̄
-            return right ? i : i-1
+            return right ? i : i - 1
         end
     end
     return right ? nb_break_points + 1 : nb_break_points
@@ -57,8 +57,8 @@ function (f::PiecewiseLinear)(x::Real)
         return break_y[end] + f.final_slope * (x - break_x[end])
     end
     # else, x is between two breakpoints
-    y1, y2 = break_y[closest-1], break_y[closest]
-    x1, x2 = break_x[closest-1], break_x[closest]
+    y1, y2 = break_y[closest - 1], break_y[closest]
+    x1, x2 = break_x[closest - 1], break_x[closest]
     # slope = (y2 - y1) / (x2 - x1)
     return y1 + (y2 - y1) * (x - x1) / (x2 - x1)
 end
@@ -115,7 +115,7 @@ function compose(f1::PiecewiseLinear, f2::PiecewiseLinear)
     x_list = Float64[]
     y_list = Float64[]
     for (i, x1) in enumerate(f2.break_x)
-        x2 = get_x(f2, i+1)
+        x2 = get_x(f2, i + 1)
         y1, y2 = f2(x1), f2(x2)
         my_push!(x_list, x1)
         my_push!(y_list, f1(y1))
@@ -177,7 +177,7 @@ function get_points(f1::PiecewiseLinear, f2::PiecewiseLinear, i1::Int, i2::Int; 
     x_min = min(f1.break_x[1], f2.break_x[1]) - delta
     x_max = max(f1.break_x[end], f2.break_x[end]) + delta
 
-    x1, y1, x2, y2 = 0., 0., 0., 0.
+    x1, y1, x2, y2 = 0.0, 0.0, 0.0, 0.0
 
     if i1 == 0
         x1, y1 = x_min, f1(x_min)
@@ -207,7 +207,7 @@ function intersection(f1::PiecewiseLinear, f2::PiecewiseLinear, i1::Int, i2::Int
     no_intersection = -1.0
 
     x11, y11, x21, y21 = get_points(f1, f2, i1, i2)
-    x12, y12, x22, y22 = get_points(f1, f2, i1+1, i2+1)
+    x12, y12, x22, y22 = get_points(f1, f2, i1 + 1, i2 + 1)
 
     if x12 < x21 || x22 < x11  # intervals do not intersect
         return no_intersection
@@ -237,7 +237,8 @@ Compute the minimum of two PiecewiseLinear functions
 Return a PiecewiseLinear f, such that ∀x, f(x) = min(f1(x), f2(x)).
 """
 function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
-    if (f1.break_x == [0.0] && f1.break_x == [0.0]) || (f2.break_y == [0.0] && f2.break_y == [0.0])
+    if (f1.break_x == [0.0] && f1.break_x == [0.0]) ||
+        (f2.break_y == [0.0] && f2.break_y == [0.0])
         # ! doesn't work when negative
         return PiecewiseLinear()
     end

@@ -26,7 +26,6 @@ function minimum(R::Vector{RSPResource})
     return RSPResource(new_c, new_w)
 end
 
-
 ## Expansion functions
 
 struct RSPFunction
@@ -37,7 +36,6 @@ end
 function (f::RSPFunction)(q::RSPResource)
     return RSPResource(f.c + q.c, f.w + q.w)
 end
-
 
 ## Cost
 
@@ -68,10 +66,15 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function resource_shortest_path(
-    g::G, max_costs::AbstractVector, s::T, t::T, distmx::AbstractMatrix, costmx::Array{Float64, 3}
-) where {T, G <: AbstractGraph{T}; IsDirected{G}}
+    g::G,
+    max_costs::AbstractVector,
+    s::T,
+    t::T,
+    distmx::AbstractMatrix,
+    costmx::Array{Float64,3},
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     # origin forward resource and backward forward resource set to 0
-    resource = RSPResource(0., zero(max_costs))
+    resource = RSPResource(0.0, zero(max_costs))
 
     # forward and backward expansion functions are equal
     If = [src(e) for e in edges(g)]
@@ -100,7 +103,7 @@ Compute resource contrained shortest path between first and last vertices of gra
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function resource_shortest_path(
-    g::G, max_costs::AbstractVector, distmx::AbstractMatrix, costmx::Array{Float64, 3}
+    g::G, max_costs::AbstractVector, distmx::AbstractMatrix, costmx::Array{Float64,3}
 ) where {G <: AbstractGraph; IsDirected{G}}
     return resource_shortest_path(g, max_costs, 1, nv(g), distmx, costmx)
 end

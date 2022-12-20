@@ -14,7 +14,7 @@ end
 
 function remove_dominated!(Mw::Vector{BSPResource}, rq::BSPResource)
     empty!(Mw)
-    Mw = push!(Mw, rq)
+    return Mw = push!(Mw, rq)
 end
 
 # Wrapper
@@ -35,7 +35,7 @@ Compute shortest path between vertices `s` and `t` of graph `g`.
 """
 @traitfn function basic_shortest_path(
     g::G, s::T, t::T, distmx::AbstractMatrix=weights(g)
-) where {T, G <: AbstractGraph{T}; IsDirected{G}}
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     # origin forward resource and backward forward resource set to 0
     resource = 0.0
 

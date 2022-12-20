@@ -25,8 +25,8 @@ end
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
 @traitfn function compute_bounds(
-    instance::CSPInstance{G}, s::Int, t::Int
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{G}, s::T, t::T
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(instance.graph)
 
@@ -34,8 +34,10 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
     bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
     bounds[t] = instance.destination_backward_resource
     for vertex in vertices_order[2:end]
-        vector = [instance.backward_functions[vertex, neighbor](bounds[neighbor])
-            for neighbor in outneighbors(graph, vertex)]
+        vector = [
+            instance.backward_functions[vertex, neighbor](bounds[neighbor]) for
+            neighbor in outneighbors(graph, vertex)
+        ]
         bounds[vertex] = minimum(vector)
     end
 
@@ -43,14 +45,14 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
 end
 
 """
-    generalized_A_star(instance, bounds)
+    generalized_A_star(instance, s, t, bounds)
 
 Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
 @traitfn function generalized_A_star(
-    instance::CSPInstance{G}, s::Int, t::Int, bounds::AbstractVector
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{G}, s::T, t::T, bounds::AbstractVector
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     graph = instance.graph
     nb_vertices = nv(graph)
 
@@ -99,7 +101,7 @@ Compute the shortest path between nodes `s`and `t` of `instance`.
 """
 @traitfn function generalized_constrained_shortest_path(
     instance::CSPInstance{G}, s::T, t::T
-) where {T, G <: AbstractGraph{T}; IsDirected{G}}
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     bounds = compute_bounds(instance, s, t)
     return generalized_A_star(instance, s, t, bounds)
 end

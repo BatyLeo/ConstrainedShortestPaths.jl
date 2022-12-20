@@ -1,18 +1,20 @@
-function random_acyclic_digraph(nb_vertices::Integer; p=0.4, all_connected_to_source_and_destination=false)
+function random_acyclic_digraph(
+    nb_vertices::Integer; p=0.4, all_connected_to_source_and_destination=false
+)
     edge_list = []
     for u in 1:nb_vertices
         if u < nb_vertices && !all_connected_to_source_and_destination
-            push!(edge_list, (u, u+1))
+            push!(edge_list, (u, u + 1))
         end
 
-        for v in (u+1):(u == 1 ? nb_vertices-1 : nb_vertices)
+        for v in (u + 1):(u == 1 ? nb_vertices - 1 : nb_vertices)
             if rand() <= p
                 push!(edge_list, (u, v))
             end
         end
     end
     if all_connected_to_source_and_destination
-        for i in 2:nb_vertices-1
+        for i in 2:(nb_vertices - 1)
             push!(edge_list, (1, i))
             push!(edge_list, (i, nb_vertices))
         end
@@ -22,27 +24,21 @@ end
 
 function resource_PLNE(g, d, c, C)
     model = Model(GLPK.Optimizer)
-    #set_optimizer_attribute(model, "logLevel", 0)
 
     nb_vertices = nv(g)
     nodes = 1:nb_vertices
-    interior = 2:nb_vertices-1
+    interior = 2:(nb_vertices - 1)
 
     @variable(model, y[i=nodes, j=nodes; has_edge(g, i, j)], Bin)
 
-    @objective(model, Min, sum(d[src, dst] * y[src, dst] for (;src, dst) in edges(g)))
+    @objective(model, Min, sum(d[src, dst] * y[src, dst] for (; src, dst) in edges(g)))
 
     @constraint(
         model,
         flow[i in interior],
-        sum(y[j, i] for j in inneighbors(g, i)) ==
-        sum(y[i, j] for j in outneighbors(g, i))
+        sum(y[j, i] for j in inneighbors(g, i)) == sum(y[i, j] for j in outneighbors(g, i))
     )
-    @constraint(
-        model,
-        demand,
-        sum(y[1, i] for i in outneighbors(g, 1)) == 1
-    )
+    @constraint(model, demand, sum(y[1, i] for i in outneighbors(g, 1)) == 1)
     @constraint(
         model,
         resource[k in 1:length(C)],
@@ -73,7 +69,7 @@ function path_cost(path, slacks, delays)
     old_v = path[1]
     R = delays[old_v, :]
     C = 0.0
-    for v in path[2:end-1]
+    for v in path[2:(end - 1)]
         @. R = max(R - slacks[old_v, v], 0) + delays[v, :]
         C += sum(R) / nb_scenarios
         old_v = v
@@ -83,7 +79,7 @@ end
 
 function stochastic_PLNE(g, slacks, delays, initial_paths)
     nb_nodes = nv(g)
-    job_indices = 2:nb_nodes-1
+    job_indices = 2:(nb_nodes - 1)
 
     model = Model(GLPK.Optimizer)
 
@@ -104,21 +100,21 @@ function stochastic_PLNE(g, slacks, delays, initial_paths)
 
     while true
         optimize!(model)
-        #@info "Objective" objective_value(model)
         λ_val = value.(λ)
-        (; c_star, p_star) = stochastic_routing_shortest_path(
-            g, slacks, delays, λ_val
-        )
-        full_cost = c_star + vehicle_cost + sum(λ_val[v] for v in job_indices if v in p_star)
+        (; c_star, p_star) = stochastic_routing_shortest_path(g, slacks, delays, λ_val)
+        full_cost =
+            c_star + vehicle_cost + sum(λ_val[v] for v in job_indices if v in p_star)
         @assert path_cost(p_star, slacks, delays) + vehicle_cost ≈ full_cost
         if c_star + vehicle_cost > -eps
             break
         end
         push!(new_paths, p_star)
-        push!(cons, @constraint(
-            model,
-            full_cost - sum(λ[v] for v in job_indices if v in p_star) >= 0
-        ))
+        push!(
+            cons,
+            @constraint(
+                model, full_cost - sum(λ[v] for v in job_indices if v in p_star) >= 0
+            )
+        )
     end
 
     #@info "Dual Objective" dual_objective_value(model)
@@ -128,7 +124,7 @@ end
 
 function column_generation(g, slacks, delays, paths::Vector{Vector{Int}}; bin=true)
     nb_nodes = nv(g)
-    job_indices = 2:nb_nodes-1
+    job_indices = 2:(nb_nodes - 1)
 
     model = Model(GLPK.Optimizer)
 
@@ -140,11 +136,7 @@ function column_generation(g, slacks, delays, paths::Vector{Vector{Int}}; bin=tr
 
     @objective(model, Min, sum(path_cost(p, slacks, delays) * y[p] for p in paths))
 
-    @constraint(
-        model,
-        con[v in job_indices],
-        sum(y[p] for p in paths if v in p) == 1
-    )
+    @constraint(model, con[v in job_indices], sum(y[p] for p in paths if v in p) == 1)
 
     optimize!(model)
 
@@ -153,13 +145,13 @@ end
 
 function solve_scenarios(graph, slacks, delays)
     nb_nodes = nv(graph)
-    job_indices = 2:nb_nodes-1
+    job_indices = 2:(nb_nodes - 1)
     nodes = 1:nb_nodes
 
     # Pre-processing
     ε = delays
     #Rmax = maximum(ε, dims=1)
-    Rmax = maximum(sum(ε, dims=1))
+    Rmax = maximum(sum(ε; dims=1))
     nb_scenarios = size(ε, 2)
     Ω = 1:nb_scenarios
 
@@ -176,7 +168,8 @@ function solve_scenarios(graph, slacks, delays)
         model,
         Min,
         sum(sum(R[v, ω] for v in job_indices) for ω in Ω) / nb_scenarios # average total delay
-            + vehicle_cost * sum(y[1, v] for v in job_indices) # nb_vehicles
+            +
+            vehicle_cost * sum(y[1, v] for v in job_indices) # nb_vehicles
     )
 
     # Flow contraints
@@ -184,7 +177,7 @@ function solve_scenarios(graph, slacks, delays)
         model,
         flow[i in job_indices],
         sum(y[j, i] for j in inneighbors(graph, i)) ==
-        sum(y[i, j] for j in outneighbors(graph, i))
+            sum(y[i, j] for j in outneighbors(graph, i))
     )
     @constraint(
         model,
@@ -198,7 +191,10 @@ function solve_scenarios(graph, slacks, delays)
     @constraint(
         model,
         R_delay_2[v in job_indices, ω in Ω],
-        R[v, ω] >= ε[v, ω] + sum(yR[u, v, ω] - y[u, v] * slacks[u, v][ω] for u in nodes if has_edge(graph, u, v))
+        R[v, ω] >=
+            ε[v, ω] + sum(
+            yR[u, v, ω] - y[u, v] * slacks[u, v][ω] for u in nodes if has_edge(graph, u, v)
+        )
     )
 
     # Mc Cormick linearization constraints

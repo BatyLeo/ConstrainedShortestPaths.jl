@@ -1,6 +1,6 @@
 function fplot(f, start=0, stop=15; name="f")
     ff(x) = f(x)
-    println(lineplot(ff, start, stop; name=name))
+    return println(lineplot(ff, start, stop; name=name))
 end
 
 function fplot_full(f_dict, start=0, stop=15)
@@ -13,7 +13,7 @@ function fplot_full(f_dict, start=0, stop=15)
             lineplot!(plt, f, start, stop; name=name)
         end
     end
-    println(plt)
+    return println(plt)
 end
 
 @testset "Mini test" begin
@@ -59,7 +59,7 @@ end
 
     # test meet operation
     m = meet(f1, f2)
-    @test m.break_x == [0.] && m.break_y == [0.]
+    @test m.break_x == [0.0] && m.break_y == [0.0]
     @test [m(x) for x in 0:50] == [min(f1(x), f2(x)) for x in 0:50]
 
     # test sum
@@ -73,8 +73,8 @@ end
         Random.seed!(i)
         r(n=5, m=10) = sort([rand() * m for _ in 1:n])
 
-        f1 = PiecewiseLinear(rand()*5, r(), r())
-        f2 = PiecewiseLinear(rand()*5, r(), r())
+        f1 = PiecewiseLinear(rand() * 5, r(), r())
+        f2 = PiecewiseLinear(rand() * 5, r(), r())
 
         X = r(50, 50)
         f4 = meet(f1, f2)
@@ -97,8 +97,8 @@ end
         Random.seed!(i)
         r(m=10) = rand() * m
 
-        f1 = PiecewiseLinear(1., [r()], [r()])
-        f2 = PiecewiseLinear(1., [r()], [r()])
+        f1 = PiecewiseLinear(1.0, [r()], [r()])
+        f2 = PiecewiseLinear(1.0, [r()], [r()])
         f3 = compose(f1, f2)
 
         X = sort([r(50) for _ in 1:50])
