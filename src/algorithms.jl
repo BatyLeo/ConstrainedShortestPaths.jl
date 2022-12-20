@@ -31,10 +31,8 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
     nb_vertices = nv(instance.graph)
 
     vertices_order = topological_order(graph, s, t)
-    #@info "Order" vertices_order
     bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
     bounds[t] = instance.destination_backward_resource
-    #bounds = [instance.destination_backward_resource for _ = 1:nb_vertices]
     for vertex in vertices_order[2:end]
         vector = [instance.backward_functions[vertex, neighbor](bounds[neighbor])
             for neighbor in outneighbors(graph, vertex)]
@@ -62,12 +60,14 @@ Perform generalized A star algorithm on instnace using bounds
     L = PriorityQueue{Vector{Int},Float64}(
         empty_path => instance.cost_function(forward_resources[empty_path], bounds[s])
     )
-    M = [typeof(forward_resources[empty_path])[] for _ in 1:nb_vertices]
+
+    forward_type = typeof(forward_resources[empty_path])
+    M = [forward_type[] for _ in 1:nb_vertices]
     push!(M[s], forward_resources[empty_path])
     c_star = Inf
     p_star = [s]
 
-    while length(L) > 0
+    while !isempty(L)
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
@@ -101,7 +101,6 @@ Compute shortest path between first and last nodes of `instance`
     instance::CSPInstance{G}, s::Int, t::Int
 ) where {G <: AbstractGraph; IsDirected{G}}
     bounds = compute_bounds(instance, s, t)
-    # @info "Bounds" bounds
     return generalized_A_star(instance, s, t, bounds)
 end
 
