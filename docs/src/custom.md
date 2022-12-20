@@ -115,7 +115,7 @@ Jf = [dst(e) for e in edges(graph)]
 f = [ExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
 F = sparse(If, Jf, f);
 
-instance = RCSPInstance(graph, resource, resource, Cost(W), F, F)
+instance = CSPInstance(graph, resource, resource, Cost(W), F, F)
 (; p_star, c_star) = generalized_constrained_shortest_path(instance)
 @info "Result" c_star p_star
 ````

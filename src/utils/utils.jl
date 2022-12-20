@@ -1,4 +1,4 @@
-function is_dominated(rq::F, Mw::Vector{F}) where F
+function is_dominated(rq::F, Mw::Vector{F}) where {F}
     for r in Mw
         if r <= rq
             return true
@@ -7,8 +7,21 @@ function is_dominated(rq::F, Mw::Vector{F}) where F
     return false
 end
 
+function remove_dominated!(Mw::AbstractVector{R}, rq::R) where {R}
+    to_delete = Int[]
+    for (i, r) in enumerate(Mw)
+        if rq <= r
+            push!(to_delete, i)
+        end
+    end
+    deleteat!(Mw, to_delete)
+    return nothing
+end
+
 # Topological order computing
-@traitfn function scan!(graph::G, vertex::Int, order::Vector{Int}, opened::BitVector) where {G; IsDirected{G}}
+@traitfn function scan!(
+    graph::G, vertex::T, order::Vector{T}, opened::BitVector
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     opened[vertex] = true
     for neighbour in outneighbors(graph, vertex)
         if opened[neighbour]
@@ -17,21 +30,16 @@ end
         scan!(graph, neighbour, order, opened)
     end
     push!(order, vertex)
+    return nothing
 end
 
-@traitfn function topological_order(graph::G) where {G; IsDirected{G}}
+@traitfn function topological_order(
+    graph::G, s::T, t::T
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     order = Int[]
     opened = falses(nv(graph))
-    scan!(graph, 1, order, opened)
-    return order
-end
+    scan!(graph, s, order, opened)
 
-function remove_dominated!(Mw::AbstractVector{R}, rq::R) where R
-    to_delete = Int[]
-    for (i, r) in enumerate(Mw)
-        if rq <= r
-            push!(to_delete, i)
-        end
-    end
-    deleteat!(Mw, to_delete)
+    start = findfirst(x -> (x == t), order)  # Can we do smarter than that ?
+    return order[start:end]
 end
