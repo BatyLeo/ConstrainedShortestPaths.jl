@@ -86,5 +86,5 @@ end
 @traitfn function resource_shortest_path(
     g::G, max_costs::AbstractVector, distmx::AbstractMatrix, costmx::Array{Float64, 3}
 ) where {G <: AbstractGraph; IsDirected{G}}
-    return resource_shortest_path(g, max_costs, s, t, distmx, costmx)
+    return resource_shortest_path(g, max_costs, 1, nv(g), distmx, costmx)
 end
