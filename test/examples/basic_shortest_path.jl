@@ -2,7 +2,7 @@
     nb_vertices = 10
 
     graph = path_digraph(nb_vertices)
-    p_star, c_star = basic_shortest_path(graph)
+    p_star, c_star = basic_shortest_path(graph, 1, nv(graph))
     @test c_star == nb_vertices - 1
     @test c_star == dijkstra_shortest_paths(graph, [1]).dists[end]
 end
@@ -22,7 +22,7 @@ end
     Jw = [dst(e) for e in edges(graph)]
     w = sparse(Iw, Jw, weight_list)
 
-    p_star, c_star = basic_shortest_path(graph, w)
+    p_star, c_star = basic_shortest_path(graph, 1, nv(graph), w)
 
     @test c_star == 1
 end

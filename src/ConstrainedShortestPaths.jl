@@ -18,7 +18,7 @@ export basic_shortest_path, resource_shortest_path
 export stochastic_routing_shortest_path, stochastic_routing_shortest_path_with_threshold
 export generalized_constrained_shortest_path,
     generalized_constrained_shortest_path_with_threshold
-export compute_bounds, generalized_A_star, generalized_A_star_with_threshold, CSPInstance
+export compute_bounds, generalized_a_star, generalized_a_star_with_threshold, CSPInstance
 export remove_dominated!
 export PiecewiseLinear, compose, intersection, meet
 
