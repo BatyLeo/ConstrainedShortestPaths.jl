@@ -93,17 +93,22 @@ Perform generalized A star algorithm on instnace using bounds
 end
 
 """
-    generalized_constrained_shortest_path(instance)
+    generalized_constrained_shortest_path(instance, s, t)
 
-Compute shortest path between first and last nodes of `instance`
+Compute the shortest path between nodes `s`and `t` of `instance`.
 """
 @traitfn function generalized_constrained_shortest_path(
-    instance::CSPInstance{G}, s::Int, t::Int
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{G}, s::T, t::T
+) where {T, G <: AbstractGraph{T}; IsDirected{G}}
     bounds = compute_bounds(instance, s, t)
     return generalized_A_star(instance, s, t, bounds)
 end
 
+"""
+    generalized_constrained_shortest_path(instance)
+
+Compute the shortest path between first and last nodes of `instance`.
+"""
 @traitfn function generalized_constrained_shortest_path(
     instance::CSPInstance{G}
 ) where {G <: AbstractGraph; IsDirected{G}}

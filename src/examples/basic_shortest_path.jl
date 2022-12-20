@@ -20,9 +20,9 @@ end
 # Wrapper
 
 """
-    basic_shortest_path(g, distmx=weights(g))
+    basic_shortest_path(g, distmx=weights(g), s, t)
 
-Compute shortest path between first and last vertices of graph `g`.
+Compute shortest path between vertices `s` and `t` of graph `g`.
 
 # Arguments
 - `g::AbstractGraph`: acyclic directed graph.
@@ -49,6 +49,20 @@ Compute shortest path between first and last vertices of graph `g`.
     return generalized_constrained_shortest_path(instance, s, t)
 end
 
+"""
+    basic_shortest_path(g, distmx=weights(g))
+
+Compute shortest path between first and last vertices of graph `g`.
+
+# Arguments
+- `g::AbstractGraph`: acyclic directed graph.
+- `distmx::AbstractMatrix`: `distmx[i, j]` corresponds to the distance between vertices `i` and `j`
+    along edge `(i, j)` of `g`.
+
+# Returns
+- `p_star::Vector{Int}`: optimal path found.
+- `c_star::Float64`: length of path `p_star`.
+"""
 @traitfn function basic_shortest_path(
     g::G, distmx::AbstractMatrix=weights(g)
 ) where {G <: AbstractGraph; IsDirected{G}}
