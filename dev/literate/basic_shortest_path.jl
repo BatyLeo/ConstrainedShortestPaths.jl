@@ -46,5 +46,5 @@ p_star, c_star = basic_shortest_path(g, cost_matrix)
 # We can check that we obtain the same results with the dynamic programming algorithm from Graphs.jl
 
 p = enumerate_paths(bellman_ford_shortest_paths(g, 1, cost_matrix), nb_vertices)
-c = sum(cost_matrix[p[i], p[i+1]] for i in eachindex(p[1:end-1]))
+c = sum(cost_matrix[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))
 @info "Bellman" c p'

@@ -11,13 +11,13 @@ using Random
 using SparseArrays</code></pre><h3 id="Create-a-random-instance"><a class="docs-heading-anchor" href="#Create-a-random-instance">Create a random instance</a><a id="Create-a-random-instance-1"></a><a class="docs-heading-anchor-permalink" href="#Create-a-random-instance" title="Permalink"></a></h3><p>Random graph acyclic directed graph</p><pre><code class="language-julia hljs">function random_acyclic_digraph(nb_vertices::Integer; p=0.4)
     edge_list = []
     for u in 1:nb_vertices
-        for v in (u+1):(u == 1 ? nb_vertices-1 : nb_vertices)
+        for v in (u + 1):(u == 1 ? nb_vertices - 1 : nb_vertices)
             if rand() &lt;= p
                 push!(edge_list, (u, v))
             end
         end
     end
-    for i in 2:nb_vertices-1
+    for i in 2:(nb_vertices - 1)
         push!(edge_list, (1, i))
         push!(edge_list, (i, nb_vertices))
     end
@@ -33,8 +33,13 @@ J = [dst(e) for e in edges(graph)]
 
 delays = rand(nb_vertices, nb_scenarios) * 10
 delays[end, :] .= 0.0
-slacks = [dst(e) == nb_vertices ? [Inf for _ in 1:nb_scenarios] :
-    [rand() * 10 for _ in 1:nb_scenarios] for e in edges(graph)]
+slacks = [
+    if dst(e) == nb_vertices
+        [Inf for _ in 1:nb_scenarios]
+    else
+        [rand() * 10 for _ in 1:nb_scenarios]
+    end for e in edges(graph)
+]
 slack_matrix = sparse(I, J, slacks);
 
 # Path cost computation
@@ -43,7 +48,7 @@ function path_cost(path, slacks, delays)
     old_v = path[1]
     R = delays[old_v, :]
     C = 0.0
-    for v in path[2:end-1]
+    for v in path[2:(end - 1)]
         @. R = max(R - slacks[old_v, v], 0) + delays[v, :]
         C += sum(R) / nb_scenarios
         old_v = v
@@ -51,7 +56,7 @@ function path_cost(path, slacks, delays)
     return C
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">path_cost (generic function with 1 method)</code></pre><h2 id="Column-generation-algorithm"><a class="docs-heading-anchor" href="#Column-generation-algorithm">Column generation algorithm</a><a id="Column-generation-algorithm-1"></a><a class="docs-heading-anchor-permalink" href="#Column-generation-algorithm" title="Permalink"></a></h2><p>We use the dual formulation with constraints generation:</p><pre><code class="language-julia hljs">function column_generation(g, slacks, delays)
     nb_vertices = nv(g)
-    job_indices = 2:nb_vertices-1
+    job_indices = 2:(nb_vertices - 1)
 
     model = Model(GLPK.Optimizer)
 
@@ -60,7 +65,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     @objective(model, Max, sum(λ[v] for v in job_indices))
 
     # Initialize constraints set with all [o, v, d] paths
-    initial_paths = [[1, v, nb_vertices] for v in 2:nb_vertices-1]
+    initial_paths = [[1, v, nb_vertices] for v in 2:(nb_vertices - 1)]
     @constraint(
         model,
         con[p in initial_paths],
@@ -74,18 +79,13 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
         optimize!(model)
         λ_val = value.(λ)
         # Solve the shortest path subproblem
-        (; c_star, p_star) = stochastic_routing_shortest_path(
-            g, slacks, delays, λ_val
-        )
+        (; c_star, p_star) = stochastic_routing_shortest_path(g, slacks, delays, λ_val)
         if c_star &gt; -1e-10
             break
         end
         full_cost = c_star + sum(λ_val[v] for v in job_indices if v in p_star)
         # Add the most violated constraint
-        @constraint(
-            model,
-            full_cost - sum(λ[v] for v in job_indices if v in p_star) &gt;= 0
-        )
+        @constraint(model, full_cost - sum(λ[v] for v in job_indices if v in p_star) &gt;= 0)
     end
 
     return objective_value(model)
@@ -93,4 +93,4 @@ end
 
 obj = column_generation(graph, slack_matrix, delays)
 @info &quot;Objective value&quot; obj</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Info: Objective value
-└   obj = 216.87276861300555</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../resource_shortest_path/">« Shortest path with linear resource constraints</a><a class="docs-footer-nextpage" href="../custom/">Implement a custom problem »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.18 on <span class="colophon-date" title="Saturday 17 December 2022 13:55">Saturday 17 December 2022</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+└   obj = 216.87276861300555</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../resource_shortest_path/">« Shortest path with linear resource constraints</a><a class="docs-footer-nextpage" href="../custom/">Implement a custom problem »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.18 on <span class="colophon-date" title="Tuesday 20 December 2022 14:02">Tuesday 20 December 2022</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

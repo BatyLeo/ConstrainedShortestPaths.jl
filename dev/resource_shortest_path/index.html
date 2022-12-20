@@ -16,17 +16,18 @@ J = [dst(e) for e in edges(graph)]
 d = sparse(I, J, distance_list)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×4 SparseArrays.SparseMatrixCSC{Int64, Int64} with 5 stored entries:
  ⋅  1   2  ⋅
  ⋅  ⋅  -1  1
- ⋅  ⋅   ⋅  1</code></pre><p>We now add resource costs <span>$w_a$</span> on edges, and a resource constraint of the form: <span>$\sum\limits_{a\in P} w_a \leq W$</span></p><pre><code class="language- hljs">W = [1.]
+ ⋅  ⋅   ⋅  1</code></pre><p>We now add resource costs <span>$w_a$</span> on edges, and a resource constraint of the form: <span>$\sum\limits_{a\in P} w_a \leq W$</span></p><pre><code class="language- hljs">W = [1.0]
 cost_list = [[0], [0], [10], [0], [0]]
-w = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
+w = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
 for ((i, j), c) in zip(edge_list, cost_list)
     w[i, j, :] = c
 end
 
-graphplot(graph;
+graphplot(
+    graph;
     node_color=:red,
     nlabels=[&quot;$i&quot; for i in 1:nb_vertices],
-    elabels=[&quot;d=$(d[e.src, e.dst]), w=$(w[e.src, e.dst, :])&quot; for e in edges(graph)]
+    elabels=[&quot;d=$(d[e.src, e.dst]), w=$(w[e.src, e.dst, :])&quot; for e in edges(graph)],
 )</code></pre><p>With these costs, the optimal path should be [1, 2, 4], with length 2.</p><pre><code class="language-julia hljs">p_star, c_star = resource_shortest_path(graph, W, d, w)
 @info &quot;Solution found&quot; p_star c_star</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Info: Solution found
 │   p_star =
@@ -34,4 +35,4 @@ graphplot(graph;
 │     1
 │     2
 │     4
-└   c_star = 2.0</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../basic_shortest_path/">« Usual shortest path</a><a class="docs-footer-nextpage" href="../stochastic_vsp/">Stochastic Vehicle Scheduling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.18 on <span class="colophon-date" title="Saturday 17 December 2022 13:55">Saturday 17 December 2022</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+└   c_star = 2.0</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../basic_shortest_path/">« Usual shortest path</a><a class="docs-footer-nextpage" href="../stochastic_vsp/">Stochastic Vehicle Scheduling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.18 on <span class="colophon-date" title="Tuesday 20 December 2022 14:02">Tuesday 20 December 2022</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
