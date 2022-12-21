@@ -98,32 +98,31 @@ Perform generalized A star algorithm on instnace using bounds
             end
         end
     end
-    return (p_star=p_star, c_star=c_star)
+    return (; p_star, c_star)
 end
 
 """
-    generalized_a_star(instance, bounds)
+    generalized_a_star_with_threshold(instance, bounds, threshold)
 
-Perform generalized A star algorithm on instnace using bounds
-(see [Generalized `A^\\star`](@ref)).
+Compute all paths below threshold.
 """
 @traitfn function generalized_a_star_with_threshold(
     instance::CSPInstance{G}, bounds::AbstractVector, threshold::Float64
 ) where {G <: AbstractGraph; IsDirected{G}}
-    graph = instance.graph
-    nb_vertices = nv(graph)
+    (; graph, origin_vertex, destination_vertex) = instance
 
-    origin = 1
-    empty_path = [origin]
+    empty_path = [origin_vertex]
 
     forward_resources = Dict(empty_path => instance.origin_forward_resource)
     L = PriorityQueue{Vector{Int},Float64}(
-        empty_path => instance.cost_function(forward_resources[empty_path], bounds[origin])
+        empty_path =>
+            instance.cost_function(forward_resources[empty_path], bounds[origin_vertex]),
     )
-    p_star = Vector{Int}[]  # undef
-    c_star = Float64[]
 
-    while length(L) > 0
+    c_star = Float64[]
+    p_star = Vector{Int}[]
+
+    while !isempty(L)
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
@@ -134,7 +133,7 @@ Perform generalized A star algorithm on instnace using bounds
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
             if c < threshold
-                if w == nb_vertices # if destination is reached
+                if w == destination_vertex # if destination is reached
                     push!(p_star, copy(q))
                     push!(c_star, c)
                 else # else add path to queue
@@ -144,7 +143,7 @@ Perform generalized A star algorithm on instnace using bounds
             # else, discard path (i.e. do nothing)
         end
     end
-    return p_star, c_star
+    return (; p_star, c_star)
 end
 
 """

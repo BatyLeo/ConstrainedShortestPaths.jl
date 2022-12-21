@@ -165,16 +165,15 @@ end
     FF = sparse(I, J, ff)
     BB = sparse(I, J, bb)
 
-    # TODO: cleanup
-    instance = CSPInstance(
+    instance = CSPInstance(;
         graph,
-        1,
-        nv(graph),
+        origin_vertex=1,
+        destination_vertex=nv(graph),
         origin_forward_resource,
         destination_backward_resource,
-        stochastic_cost,
-        FF,
-        BB,
+        cost_function=stochastic_cost,
+        forward_functions=FF,
+        backward_functions=BB,
     )
     return generalized_constrained_shortest_path_with_threshold(instance, threshold)
 end
