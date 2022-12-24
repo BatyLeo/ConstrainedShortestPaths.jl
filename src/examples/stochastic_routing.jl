@@ -99,8 +99,10 @@ Compute stochastic routing shortest path between first and last vertices of grap
     g::G,
     slacks::AbstractMatrix,
     delays::AbstractMatrix,
-    λ_values::AbstractVector=zeros(nv(g)),
-) where {G <: AbstractGraph; IsDirected{G}}
+    λ_values::AbstractVector=zeros(nv(g));
+    origin_vertex::T=one(T),
+    destination_vertex::T=nv(g),
+) where {T,G<:AbstractGraph{T};IsDirected{G}}
     nb_scenarios = size(delays, 2)
 
     origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
@@ -122,8 +124,56 @@ Compute stochastic routing shortest path between first and last vertices of grap
     FF = sparse(I, J, ff)
     BB = sparse(I, J, bb)
 
-    instance = CSPInstance(
-        g, origin_forward_resource, destination_backward_resource, stochastic_cost, FF, BB
+    instance = CSPInstance(;
+        graph=g,
+        origin_vertex,
+        destination_vertex,
+        origin_forward_resource,
+        destination_backward_resource,
+        cost_function=stochastic_cost,
+        forward_functions=FF,
+        backward_functions=BB,
     )
     return generalized_constrained_shortest_path(instance)
+end
+
+@traitfn function stochastic_routing_shortest_path_with_threshold(
+    graph::G,
+    slacks::AbstractMatrix,
+    delays::AbstractMatrix,
+    λ_values::AbstractVector=zeros(nv(g));
+    threshold,
+) where {G <: AbstractGraph; IsDirected{G}}
+    nb_scenarios = size(delays, 2)
+
+    origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
+    destination_backward_resource = StochasticBackwardResource(
+        [PiecewiseLinear() for _ in 1:nb_scenarios], 0
+    )
+
+    I = [src(e) for e in edges(graph)]
+    J = [dst(e) for e in edges(graph)]
+    ff = [
+        StochasticForwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
+        (u, v) in zip(I, J)
+    ]
+    bb = [
+        StochasticBackwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
+        (u, v) in zip(I, J)
+    ]
+
+    FF = sparse(I, J, ff)
+    BB = sparse(I, J, bb)
+
+    instance = CSPInstance(;
+        graph,
+        origin_vertex=1,
+        destination_vertex=nv(graph),
+        origin_forward_resource,
+        destination_backward_resource,
+        cost_function=stochastic_cost,
+        forward_functions=FF,
+        backward_functions=BB,
+    )
+    return generalized_constrained_shortest_path_with_threshold(instance, threshold)
 end

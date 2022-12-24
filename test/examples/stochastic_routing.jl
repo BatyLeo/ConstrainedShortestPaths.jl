@@ -215,7 +215,7 @@ end
                 @test obj ≈ obj3 || obj3 > obj
 
                 if !(obj ≈ obj2)
-                    @info "Not equal" obj obj2
+                    @info "Not equal" obj obj2 obj3
                 end
             end
         end

@@ -21,7 +21,7 @@
         c[i, j, :] = k
     end
 
-    p_star, c_star = resource_shortest_path(graph, max_cost, d, c)
+    p_star, c_star = resource_shortest_path(graph, 1, nv(graph), max_cost, d, c)
     @test p_star == [1, 2, 4]
     @test c_star == 2
 end
@@ -49,7 +49,7 @@ end
         c[i, j, :] = k
     end
 
-    p_star, c_star = resource_shortest_path(graph, max_cost, d, c)
+    p_star, c_star = resource_shortest_path(graph, 1, nv(graph), max_cost, d, c)
     @test p_star == [1, 2, 4]
     @test c_star == 2
 end
@@ -81,7 +81,7 @@ end
             c[e.src, e.dst, :] = k
         end
 
-        p_star, c_star = resource_shortest_path(graph, max_cost, d, c)
+        p_star, c_star = resource_shortest_path(graph, 1, nv(graph), max_cost, d, c)
         c, p = resource_PLNE(graph, d, c, max_cost)
         @test c_star ≈ c
         @test p_star == p
