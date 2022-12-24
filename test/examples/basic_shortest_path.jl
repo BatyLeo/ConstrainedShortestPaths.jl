@@ -29,12 +29,12 @@ end
 
 @testset "Random graphs" begin
     n = 100
-    nb_vertices = 50
+    nb_vertices = 30
     for i in 1:n
         Random.seed!(i)
         graph = random_acyclic_digraph(nb_vertices)
 
-        weight_list = [rand() * 20 - 5 for _ in 1:ne(graph)]
+        weight_list = [rand() * 50 - 20 for _ in 1:ne(graph)]
         Iw = [src(e) for e in edges(graph)]
         Jw = [dst(e) for e in edges(graph)]
         w = sparse(Iw, Jw, weight_list, nb_vertices, nb_vertices)
@@ -47,5 +47,11 @@ end
         c = sum(w[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))
         @test c_star == c
         @test p_star == p
+        # for e in edges(graph)
+        #     @info e
+        # end
+        # if c_star != c
+        #     @info "Info" i s t c' c_star' p' p_star'
+        # end
     end
 end
