@@ -107,8 +107,8 @@ end
 Compute all paths below threshold.
 """
 @traitfn function generalized_a_star_with_threshold(
-    instance::CSPInstance{G}, bounds::AbstractVector, threshold::Float64
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{T,G}, bounds::AbstractVector, threshold::Float64
+) where {T,G<:AbstractGraph;IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
 
     empty_path = [origin_vertex]
@@ -164,8 +164,8 @@ end
 Compute shortest path between first and last nodes of `instance`
 """
 @traitfn function generalized_constrained_shortest_path_with_threshold(
-    instance::CSPInstance{G}, threshold::Float64
-) where {G <: AbstractGraph; IsDirected{G}}
+    instance::CSPInstance{T,G}, threshold::Float64
+) where {T,G<:AbstractGraph;IsDirected{G}}
     bounds = compute_bounds(instance)
     return generalized_a_star_with_threshold(instance, bounds, threshold)
 end
