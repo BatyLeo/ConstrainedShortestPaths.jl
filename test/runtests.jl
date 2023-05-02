@@ -4,7 +4,6 @@ using Test
 using GLPK
 using Graphs
 using JuMP
-using JuliaFormatter
 using Random
 using SparseArrays
 using UnicodePlots
@@ -12,8 +11,6 @@ using UnicodePlots
 const SHOW_PLOTS = false
 const vehicle_cost = 0.0
 const eps = 1e-10
-
-format(ConstrainedShortestPaths; verbose=true)
 
 include("utils.jl")
 
