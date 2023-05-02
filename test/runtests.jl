@@ -17,7 +17,12 @@ format(ConstrainedShortestPaths; verbose=true)
 
 include("utils.jl")
 
-@testset verbose = true "RCSP.jl" begin
+@testset verbose = true "ConstrainedShortestPaths.jl" begin
+    @testset "Code" begin
+        @info "Code quality and correctness tests..."
+        include("code.jl")
+    end
+
     @testset "PiecewiseLinear" begin
         @info "Running piecewise linear tests..."
         include("piecewise_linear.jl")

@@ -66,7 +66,7 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function resource_shortest_path(
-    g::G,
+    graph::G,
     s::T,
     t::T,
     max_costs::AbstractVector,
@@ -77,13 +77,13 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
     resource = RSPResource(0.0, zero(max_costs))
 
     # forward and backward expansion functions are equal
-    If = [src(e) for e in edges(g)]
-    Jf = [dst(e) for e in edges(g)]
+    If = [src(e) for e in edges(graph)]
+    Jf = [dst(e) for e in edges(graph)]
     f = [RSPFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
     F = sparse(If, Jf, f)
 
     instance = CSPInstance(;
-        graph=g,
+        graph,
         origin_vertex=s,
         destination_vertex=t,
         origin_forward_resource=resource,

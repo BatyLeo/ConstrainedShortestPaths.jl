@@ -129,32 +129,6 @@ end
     end
 end
 
-# @testset "Random graphs one scenario" begin
-#     n = 5
-#     for nb_vertices in 10:20
-#         for i in 1:n
-#             Random.seed!(i)
-#             graph = random_acyclic_digraph(nb_vertices; all_connected_to_source_and_destination=true)
-
-#             nb_edges = ne(graph)
-#             I = [src(e) for e in edges(graph)]
-#             J = [dst(e) for e in edges(graph)]
-
-#             delays = reshape([rand() * 10 for _ in 1:nb_vertices], nb_vertices, 1)
-#             delays[end] = 0
-#             slacks_theory = [e.dst == nb_vertices ? [Inf] : [rand() * 10] for e in edges(graph)]
-#             slack_matrix = sparse(I, J, slacks_theory)
-
-#             initial_paths = [[1, v, nb_vertices] for v in 2:nb_vertices-1]
-#             value, obj2, paths, dual, dual_new = stochastic_PLNE(graph, slack_matrix, delays, initial_paths)
-
-#             obj, sol = solve_scenarios(graph, slack_matrix, delays)
-
-#             @test obj ≈ obj2 || obj >= obj2
-#         end
-#     end
-# end
-
 @testset "Random graphs" begin
     n = 5
     for nb_scenarios in 1:5

@@ -47,11 +47,5 @@ end
         c = sum(w[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))
         @test c_star == c
         @test p_star == p
-        # for e in edges(graph)
-        #     @info e
-        # end
-        # if c_star != c
-        #     @info "Info" i s t c' c_star' p' p_star'
-        # end
     end
 end
