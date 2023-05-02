@@ -82,12 +82,12 @@ end
 ## General wrapper
 
 """
-    stochastic_routing_shortest_path(g, slacks, delays)
+    stochastic_routing_shortest_path(graph, slacks, delays)
 
-Compute stochastic routing shortest path between first and last vertices of graph `g`.
+Compute stochastic routing shortest path between first and last vertices of graph `graph`.
 
 # Arguments
-- `g::AbstractGraph`: acyclic directed graph.
+- `graph::AbstractGraph`: acyclic directed graph.
 - `slacks`: `slacks[i, j]` corresponds to the time slack between `i` and `j`.
 - `delays`: `delays[i, ω]` corresponds to delay of `i` for scenario `ω`.
 
@@ -96,12 +96,12 @@ Compute stochastic routing shortest path between first and last vertices of grap
 - `c_star::Float64`: length of path `p_star`.
 """
 @traitfn function stochastic_routing_shortest_path(
-    g::G,
+    graph::G,
     slacks::AbstractMatrix,
     delays::AbstractMatrix,
-    λ_values::AbstractVector=zeros(nv(g));
+    λ_values::AbstractVector=zeros(nv(graph));
     origin_vertex::T=one(T),
-    destination_vertex::T=nv(g),
+    destination_vertex::T=nv(graph),
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
     nb_scenarios = size(delays, 2)
 
@@ -110,8 +110,8 @@ Compute stochastic routing shortest path between first and last vertices of grap
         [PiecewiseLinear() for _ in 1:nb_scenarios], 0
     )
 
-    I = [src(e) for e in edges(g)]
-    J = [dst(e) for e in edges(g)]
+    I = [src(e) for e in edges(graph)]
+    J = [dst(e) for e in edges(graph)]
     ff = [
         StochasticForwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
         (u, v) in zip(I, J)
@@ -125,7 +125,7 @@ Compute stochastic routing shortest path between first and last vertices of grap
     BB = sparse(I, J, bb)
 
     instance = CSPInstance(;
-        graph=g,
+        graph,
         origin_vertex,
         destination_vertex,
         origin_forward_resource,
@@ -141,7 +141,7 @@ end
     graph::G,
     slacks::AbstractMatrix,
     delays::AbstractMatrix,
-    λ_values::AbstractVector=zeros(nv(g));
+    λ_values::AbstractVector=zeros(nv(graph));
     threshold,
 ) where {G <: AbstractGraph; IsDirected{G}}
     nb_scenarios = size(delays, 2)

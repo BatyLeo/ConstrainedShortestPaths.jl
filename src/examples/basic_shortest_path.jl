@@ -20,14 +20,14 @@ end
 # Wrapper
 
 """
-    basic_shortest_path(g, distmx=weights(g), s, t)
+    basic_shortest_path(graph, distmx=weights(graph), s, t)
 
-Compute shortest path between vertices `s` and `t` of graph `g`.
+Compute shortest path between vertices `s` and `t` of graph `graph`.
 
 # Arguments
-- `g::AbstractGraph`: acyclic directed graph.
+- `graph::AbstractGraph`: acyclic directed graph.
 - `distmx::AbstractMatrix`: `distmx[i, j]` corresponds to the distance between vertices `i` and `j`
-    along edge `(i, j)` of `g`.
+    along edge `(i, j)` of `graph`.
 
 # Returns
 - `p_star::Vector{Int}`: optimal path found.

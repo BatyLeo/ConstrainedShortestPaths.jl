@@ -1,7 +1,7 @@
 name = "ConstrainedShortestPaths"
 uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
 authors = ["Léo Baty and contributors"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -11,13 +11,23 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
-SimpleTraits = "0.9"
 DataStructures = "0.18"
 Graphs = "1"
+SimpleTraits = "0.9"
 julia = "1.7"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+GLPK = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [targets]
-test = ["Test"]
+test = ["Aqua", "GLPK", "Graphs", "JET", "JuMP", "JuliaFormatter", "Plots", "Random", "SparseArrays", "Test", "UnicodePlots"]

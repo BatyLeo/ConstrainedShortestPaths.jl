@@ -41,5 +41,6 @@ end
     scan!(graph, s, order, opened)
 
     start = findfirst(x -> (x == t), order)  # Can we do smarter than that ?
+    @assert !isnothing(start)
     return order[start:end]
 end

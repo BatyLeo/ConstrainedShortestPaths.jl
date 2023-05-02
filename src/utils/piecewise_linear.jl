@@ -336,7 +336,7 @@ function meet(f1::PiecewiseLinear, f2::PiecewiseLinear)
         my_push!(y_list, f1(x))
     end
 
-    if x_list == []
+    if isempty(x_list)
         @warn "Empty return" f1 f2
     end
 

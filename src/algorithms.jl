@@ -3,19 +3,19 @@
 
 # Attributes
 
-- `graph`:
-- `origin_forward_resource`:
-- `destination_backward_resource`:
-- `cost_function`:
-- `forward_functions`:
-- `backward_functions`:
+- `graph`
+- `origin_forward_resource`
+- `destination_backward_resource`
+- `cost_function`
+- `forward_functions`
+- `backward_functions`
 """
 Base.@kwdef struct CSPInstance{
     T,G<:AbstractGraph{T},FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix
 }
     graph::G  # assumption : node 1 is origin, last node is destination
-    origin_vertex::T = one(T)
-    destination_vertex::T = nv(graph)
+    origin_vertex::T
+    destination_vertex::T
     origin_forward_resource::FR
     destination_backward_resource::BR
     cost_function::C
