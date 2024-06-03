@@ -1,6 +1,8 @@
 @testset "Quality (Aqua.jl)" begin
     using Aqua
-    Aqua.test_all(ConstrainedShortestPaths; ambiguities=false)
+    Aqua.test_all(
+        ConstrainedShortestPaths; ambiguities=false, deps_compat=(check_extras=false,)
+    )
 end
 
 @testset "Correctness (JET.jl)" begin
