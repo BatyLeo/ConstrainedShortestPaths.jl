@@ -40,7 +40,7 @@ cost_matrix = sparse(I, J, distance_list);
 
 # Compute the shortest path
 
-p_star, c_star = basic_shortest_path(g, cost_matrix)
+p_star, c_star = basic_shortest_path(g, 1, nb_vertices, cost_matrix)
 @info "Solution found" c_star p_star'
 
 # We can check that we obtain the same results with the dynamic programming algorithm from Graphs.jl

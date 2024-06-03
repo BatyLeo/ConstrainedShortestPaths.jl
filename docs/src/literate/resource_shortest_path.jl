@@ -47,5 +47,5 @@ graphplot(
 )
 
 # With these costs, the optimal path should be [1, 2, 4], with length 2.
-p_star, c_star = resource_shortest_path(graph, W, d, w)
+p_star, c_star = resource_shortest_path(graph, 1, nb_vertices, W, d, w)
 @info "Solution found" p_star c_star

@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/docs/src/literate/custom.jl"
+EditURL = "literate/custom.jl"
 ```
 
 # Implement a custom problem
@@ -100,14 +100,14 @@ d = sparse(I, J, distance_list)
 
 W = 1.0
 
-cost_list = [[0.], [0.], [10.], [0.], [0]]
-w = [0. for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
+cost_list = [[0.0], [0.0], [10.0], [0.0], [0]]
+w = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
 for ((i, j), k) in zip(edge_list, cost_list)
     w[i, j, :] = k
 end
 
 # origin forward resource and backward forward resource set to 0
-resource = Resource(0., 0.)
+resource = Resource(0.0, 0.0)
 
 # forward and backward expansion functions are equal
 If = [src(e) for e in edges(graph)]
@@ -115,7 +115,7 @@ Jf = [dst(e) for e in edges(graph)]
 f = [ExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
 F = sparse(If, Jf, f);
 
-instance = CSPInstance(graph, resource, resource, Cost(W), F, F)
+instance = CSPInstance(graph, 1, nb_vertices, resource, resource, Cost(W), F, F)
 (; p_star, c_star) = generalized_constrained_shortest_path(instance)
 @info "Result" c_star p_star
 ````

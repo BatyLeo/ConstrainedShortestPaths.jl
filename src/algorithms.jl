@@ -50,6 +50,36 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
     return bounds
 end
 
+# function dynamic_programming(instance::CSPInstance)
+#     (; graph, origin_vertex, destination_vertex) = instance
+#     nb_vertices = nv(graph)
+
+#     empty_path = [origin_vertex]
+
+#     U = PriorityQueue{Vector{Int},Float64}(empty_path => 0.0)
+#     forward_resources = Dict(empty_path => instance.origin_forward_resource)
+#     P = []
+
+#     while !isempty(U)
+#         p = dequeue!(U)
+#         v = p[end]
+#         for w in outneighbors(graph, v)
+#             q = copy(p)
+#             push!(q, w)
+#             rp = forward_resources[p]
+#             # extend label
+#             rq = instance.forward_functions[v, w](rp)
+#             c = rq.c
+#             if c < U[q]
+#                 U[q] = c
+#                 P[q] = p
+#             end
+#         end
+#     end
+
+#     return nothing
+# end
+
 """
     generalized_a_star(instance, s, t, bounds)
 

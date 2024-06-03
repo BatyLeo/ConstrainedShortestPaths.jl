@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/docs/src/literate/basic_shortest_path.jl"
+EditURL = "literate/basic_shortest_path.jl"
 ```
 
 # Usual shortest path
@@ -54,7 +54,7 @@ nothing #hide
 Compute the shortest path
 
 ````@example basic_shortest_path
-p_star, c_star = basic_shortest_path(g, cost_matrix)
+p_star, c_star = basic_shortest_path(g, 1, nb_vertices, cost_matrix)
 @info "Solution found" c_star p_star'
 ````
 
@@ -62,7 +62,7 @@ We can check that we obtain the same results with the dynamic programming algori
 
 ````@example basic_shortest_path
 p = enumerate_paths(bellman_ford_shortest_paths(g, 1, cost_matrix), nb_vertices)
-c = sum(cost_matrix[p[i], p[i+1]] for i in eachindex(p[1:end-1]))
+c = sum(cost_matrix[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))
 @info "Bellman" c p'
 ````
 

@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/docs/src/literate/stochastic_vsp.jl"
+EditURL = "literate/stochastic_vsp.jl"
 ```
 
 # Stochastic Vehicle Scheduling
@@ -91,13 +91,13 @@ Random graph acyclic directed graph
 function random_acyclic_digraph(nb_vertices::Integer; p=0.4)
     edge_list = []
     for u in 1:nb_vertices
-        for v in (u+1):(u == 1 ? nb_vertices-1 : nb_vertices)
+        for v in (u + 1):(u == 1 ? nb_vertices - 1 : nb_vertices)
             if rand() <= p
                 push!(edge_list, (u, v))
             end
         end
     end
-    for i in 2:nb_vertices-1
+    for i in 2:(nb_vertices - 1)
         push!(edge_list, (1, i))
         push!(edge_list, (i, nb_vertices))
     end
@@ -119,8 +119,13 @@ J = [dst(e) for e in edges(graph)]
 
 delays = rand(nb_vertices, nb_scenarios) * 10
 delays[end, :] .= 0.0
-slacks = [dst(e) == nb_vertices ? [Inf for _ in 1:nb_scenarios] :
-    [rand() * 10 for _ in 1:nb_scenarios] for e in edges(graph)]
+slacks = [
+    if dst(e) == nb_vertices
+        [Inf for _ in 1:nb_scenarios]
+    else
+        [rand() * 10 for _ in 1:nb_scenarios]
+    end for e in edges(graph)
+]
 slack_matrix = sparse(I, J, slacks);
 
 # Path cost computation
@@ -129,7 +134,7 @@ function path_cost(path, slacks, delays)
     old_v = path[1]
     R = delays[old_v, :]
     C = 0.0
-    for v in path[2:end-1]
+    for v in path[2:(end - 1)]
         @. R = max(R - slacks[old_v, v], 0) + delays[v, :]
         C += sum(R) / nb_scenarios
         old_v = v
@@ -145,7 +150,7 @@ We use the dual formulation with constraints generation:
 ````@example stochastic_vsp
 function column_generation(g, slacks, delays)
     nb_vertices = nv(g)
-    job_indices = 2:nb_vertices-1
+    job_indices = 2:(nb_vertices - 1)
 
     model = Model(GLPK.Optimizer)
 
@@ -154,7 +159,7 @@ function column_generation(g, slacks, delays)
     @objective(model, Max, sum(λ[v] for v in job_indices))
 
     # Initialize constraints set with all [o, v, d] paths
-    initial_paths = [[1, v, nb_vertices] for v in 2:nb_vertices-1]
+    initial_paths = [[1, v, nb_vertices] for v in 2:(nb_vertices - 1)]
     @constraint(
         model,
         con[p in initial_paths],
@@ -168,18 +173,13 @@ function column_generation(g, slacks, delays)
         optimize!(model)
         λ_val = value.(λ)
         # Solve the shortest path subproblem
-        (; c_star, p_star) = stochastic_routing_shortest_path(
-            g, slacks, delays, λ_val
-        )
+        (; c_star, p_star) = stochastic_routing_shortest_path(g, slacks, delays, λ_val)
         if c_star > -1e-10
             break
         end
         full_cost = c_star + sum(λ_val[v] for v in job_indices if v in p_star)
         # Add the most violated constraint
-        @constraint(
-            model,
-            full_cost - sum(λ[v] for v in job_indices if v in p_star) >= 0
-        )
+        @constraint(model, full_cost - sum(λ[v] for v in job_indices if v in p_star) >= 0)
     end
 
     return objective_value(model)
