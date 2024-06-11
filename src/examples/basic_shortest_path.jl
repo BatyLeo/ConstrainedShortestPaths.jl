@@ -1,10 +1,18 @@
 const BSPResource = Float64
 
-struct BSPExtensionFunction
+struct BSPForwardExtensionFunction
     c::BSPResource
 end
 
-function (f::BSPExtensionFunction)(q::BSPResource)
+function (f::BSPForwardExtensionFunction)(q::BSPResource)
+    return f.c + q, true
+end
+
+struct BSPBackwardExtensionFunction
+    c::BSPResource
+end
+
+function (f::BSPBackwardExtensionFunction)(q::BSPResource)
     return f.c + q
 end
 
@@ -42,8 +50,10 @@ Compute shortest path between vertices `s` and `t` of graph `graph`.
     # forward and backward Extension functions are equal
     If = [src(e) for e in edges(graph)]
     Jf = [dst(e) for e in edges(graph)]
-    f = [BSPExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
-    F = sparse(If, Jf, f)
+    ff = [BSPForwardExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
+    fb = [BSPBackwardExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
+    FF = sparse(If, Jf, ff)
+    FB = sparse(If, Jf, fb)
 
     instance = CSPInstance(;
         graph,
@@ -52,8 +62,8 @@ Compute shortest path between vertices `s` and `t` of graph `graph`.
         origin_forward_resource=resource,
         destination_backward_resource=resource,
         cost_function=BSP_cost,
-        forward_functions=F,
-        backward_functions=F,
+        forward_functions=FF,
+        backward_functions=FB,
     )
     return generalized_constrained_shortest_path(instance)
 end

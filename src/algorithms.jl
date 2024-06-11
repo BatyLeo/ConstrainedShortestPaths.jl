@@ -29,7 +29,7 @@ end
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
 @traitfn function compute_bounds(
-    instance::CSPInstance{T,G}
+    instance::CSPInstance{T,G}; kwargs...
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
     nb_vertices = nv(instance.graph)
@@ -41,7 +41,7 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
 
     for vertex in vertices_order[2:end]
         vector = [
-            instance.backward_functions[vertex, neighbor](bounds[neighbor]) for
+            instance.backward_functions[vertex, neighbor](bounds[neighbor]; kwargs...) for
             neighbor in outneighbors(graph, vertex)
         ]
         bounds[vertex] = minimum(vector)
@@ -50,36 +50,6 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
     return bounds
 end
 
-# function dynamic_programming(instance::CSPInstance)
-#     (; graph, origin_vertex, destination_vertex) = instance
-#     nb_vertices = nv(graph)
-
-#     empty_path = [origin_vertex]
-
-#     U = PriorityQueue{Vector{Int},Float64}(empty_path => 0.0)
-#     forward_resources = Dict(empty_path => instance.origin_forward_resource)
-#     P = []
-
-#     while !isempty(U)
-#         p = dequeue!(U)
-#         v = p[end]
-#         for w in outneighbors(graph, v)
-#             q = copy(p)
-#             push!(q, w)
-#             rp = forward_resources[p]
-#             # extend label
-#             rq = instance.forward_functions[v, w](rp)
-#             c = rq.c
-#             if c < U[q]
-#                 U[q] = c
-#                 P[q] = p
-#             end
-#         end
-#     end
-
-#     return nothing
-# end
-
 """
     generalized_a_star(instance, s, t, bounds)
 
@@ -87,7 +57,7 @@ Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
 @traitfn function generalized_a_star(
-    instance::CSPInstance{T,G}, bounds::AbstractVector
+    instance::CSPInstance{T,G}, bounds::AbstractVector; kwargs...
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
     nb_vertices = nv(graph)
@@ -113,7 +83,10 @@ Perform generalized A star algorithm on instnace using bounds
             q = copy(p)
             push!(q, w)
             rp = forward_resources[p]
-            rq = instance.forward_functions[v, w](rp)
+            rq, is_feasible = instance.forward_functions[v, w](rp; kwargs...)
+            if !is_feasible
+                continue
+            end
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
             if c < c_star # cut using bounds
@@ -137,7 +110,7 @@ end
 Compute all paths below threshold.
 """
 @traitfn function generalized_a_star_with_threshold(
-    instance::CSPInstance{T,G}, bounds::AbstractVector, threshold::Float64
+    instance::CSPInstance{T,G}, bounds::AbstractVector, threshold::Float64; kwargs...
 ) where {T,G<:AbstractGraph;IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
 
@@ -159,7 +132,10 @@ Compute all paths below threshold.
             q = copy(p)
             push!(q, w)
             rp = forward_resources[p]
-            rq = instance.forward_functions[v, w](rp)
+            rq, is_feasible = instance.forward_functions[v, w](rp; kwargs...)
+            if !is_feasible
+                continue
+            end
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
             if c < threshold
@@ -182,10 +158,10 @@ end
 Compute the shortest path of `instance`.
 """
 @traitfn function generalized_constrained_shortest_path(
-    instance::CSPInstance{T,G}
+    instance::CSPInstance{T,G}; kwargs...
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
-    bounds = compute_bounds(instance)
-    return generalized_a_star(instance, bounds)
+    bounds = compute_bounds(instance; kwargs...)
+    return generalized_a_star(instance, bounds; kwargs...)
 end
 
 """
@@ -194,8 +170,8 @@ end
 Compute shortest path between first and last nodes of `instance`
 """
 @traitfn function generalized_constrained_shortest_path_with_threshold(
-    instance::CSPInstance{T,G}, threshold::Float64
+    instance::CSPInstance{T,G}, threshold::Float64; kwargs...
 ) where {T,G<:AbstractGraph;IsDirected{G}}
-    bounds = compute_bounds(instance)
-    return generalized_a_star_with_threshold(instance, bounds, threshold)
+    bounds = compute_bounds(instance; kwargs...)
+    return generalized_a_star_with_threshold(instance, bounds, threshold; kwargs...)
 end

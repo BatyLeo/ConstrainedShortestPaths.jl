@@ -21,7 +21,7 @@ struct StochasticBackwardFunction
 end
 
 function <=(r1::StochasticForwardResource, r2::StochasticForwardResource)
-    if r1.c - r1.λ > r2.c - r2.λ #r1.c > r2.c || r1.λ < r2.λ
+    if r1.c - r1.λ > r2.c - r2.λ  # r1.c > r2.c || r1.λ < r2.λ
         return false
     end
 
@@ -55,7 +55,7 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     ]
     new_c = q.c + mean(new_xi)
     new_λ = q.λ + f.λ_value
-    return StochasticForwardResource(new_c, new_xi, new_λ)
+    return StochasticForwardResource(new_c, new_xi, new_λ), true
 end
 
 function _backward_scenario(g::PiecewiseLinear, delay::Float64, slack::Float64)
