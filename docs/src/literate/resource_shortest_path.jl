@@ -12,7 +12,7 @@ s.t. & \sum_{a\in p} w_a^k \leq W^k, & \forall k \in [K]
 
 using ConstrainedShortestPaths
 using Graphs, SparseArrays
-using GLMakie, GraphMakie
+# using GLMakie, GraphMakie
 
 # Let's create a simple graph:
 
@@ -39,12 +39,12 @@ for ((i, j), c) in zip(edge_list, cost_list)
     w[i, j, :] = c
 end
 
-graphplot(
-    graph;
-    node_color=:red,
-    nlabels=["$i" for i in 1:nb_vertices],
-    elabels=["d=$(d[e.src, e.dst]), w=$(w[e.src, e.dst, :])" for e in edges(graph)],
-)
+# graphplot(
+#     graph;
+#     node_color=:red,
+#     nlabels=["$i" for i in 1:nb_vertices],
+#     elabels=["d=$(d[e.src, e.dst]), w=$(w[e.src, e.dst, :])" for e in edges(graph)],
+# )
 
 # With these costs, the optimal path should be [1, 2, 4], with length 2.
 p_star, c_star = resource_shortest_path(graph, 1, nb_vertices, W, d, w)

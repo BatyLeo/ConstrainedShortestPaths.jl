@@ -28,23 +28,32 @@ end
 
 ## Expansion functions
 
-struct RSPFunction
+struct RSPForwardFunction
     c::Float64
     w::Vector{Float64}
 end
 
-function (f::RSPFunction)(q::RSPResource)
-    return RSPResource(f.c + q.c, f.w + q.w)
+function (f::RSPForwardFunction)(q::RSPResource; W)
+    new_resource = RSPResource(f.c + q.c, f.w + q.w)
+    return new_resource, all(new_resource.w .<= W)
+end
+struct RSPBackwardFunction
+    c::Float64
+    w::Vector{Float64}
+end
+
+function (f::RSPBackwardFunction)(q::RSPResource; W)
+    new_resource = RSPResource(f.c + q.c, f.w + q.w)
+    return new_resource
 end
 
 ## Cost
 
-struct RSPCost
-    W::Vector{Float64}
-end
+struct RSPCost end
+# W::Vector{Float64}
 
 function (cost::RSPCost)(fr::RSPResource, br::RSPResource)
-    return all(fr.w + br.w .<= cost.W) ? fr.c + br.c : Inf
+    return fr.c + br.c
 end
 
 # Wrapper
@@ -79,8 +88,10 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
     # forward and backward expansion functions are equal
     If = [src(e) for e in edges(graph)]
     Jf = [dst(e) for e in edges(graph)]
-    f = [RSPFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
-    F = sparse(If, Jf, f)
+    ff = [RSPForwardFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
+    fb = [RSPBackwardFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
+    FF = sparse(If, Jf, ff)
+    FB = sparse(If, Jf, fb)
 
     instance = CSPInstance(;
         graph,
@@ -88,9 +99,9 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
         destination_vertex=t,
         origin_forward_resource=resource,
         destination_backward_resource=resource,
-        cost_function=RSPCost(max_costs),
-        forward_functions=F,
-        backward_functions=F,
+        cost_function=RSPCost(),
+        forward_functions=FF,
+        backward_functions=FB,
     )
-    return generalized_constrained_shortest_path(instance)
+    return generalized_constrained_shortest_path(instance; W=max_costs)
 end

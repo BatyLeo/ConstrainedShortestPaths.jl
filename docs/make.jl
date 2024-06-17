@@ -43,4 +43,8 @@ makedocs(;
     ],
 )
 
+for file in [joinpath(md_dir, "$e.md") for e in tuto_list]
+    rm(file)
+end
+
 deploydocs(; repo="github.com/BatyLeo/ConstrainedShortestPaths.jl", devbranch="main")

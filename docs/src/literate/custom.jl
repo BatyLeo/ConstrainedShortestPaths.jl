@@ -54,26 +54,32 @@ end
 #=
 ## Expansion functions
 
-Same as the resources, the forward and backward expansion functions coincide in this example.
 =#
 
-struct ExpansionFunction
+struct ForwardExpansionFunction
     c::Float64
     w::Float64
 end
 
-function (f::ExpansionFunction)(q::Resource)
+function (f::ForwardExpansionFunction)(q::Resource; W)
+    return Resource(f.c + q.c, f.w + q.w), f.w + q.w <= W
+end
+
+struct BackwardExpansionFunction
+    c::Float64
+    w::Float64
+end
+
+function (f::BackwardExpansionFunction)(q::Resource; W)
     return Resource(f.c + q.c, f.w + q.w)
 end
 
 # ## Cost function
 
-struct Cost
-    W::Float64
-end
+struct Cost end
 
 function (cost::Cost)(fr::Resource, br::Resource)
-    return fr.w + br.w <= cost.W ? fr.c + br.c : Inf
+    return fr.c + br.c
 end
 
 # ## Test on an instance
@@ -103,9 +109,11 @@ resource = Resource(0.0, 0.0)
 ## forward and backward expansion functions are equal
 If = [src(e) for e in edges(graph)]
 Jf = [dst(e) for e in edges(graph)]
-f = [ExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
-F = sparse(If, Jf, f);
+ff = [ForwardExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
+fb = [BackwardExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
+FF = sparse(If, Jf, ff);
+FB = sparse(If, Jf, fb);
 
-instance = CSPInstance(graph, 1, nb_vertices, resource, resource, Cost(W), F, F)
-(; p_star, c_star) = generalized_constrained_shortest_path(instance)
+instance = CSPInstance(graph, 1, nb_vertices, resource, resource, Cost(), FF, FB)
+(; p_star, c_star) = generalized_constrained_shortest_path(instance; W=W)
 @info "Result" c_star p_star
