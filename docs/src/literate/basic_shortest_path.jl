@@ -8,7 +8,7 @@ the usual shortest path problem (no constraints and linear cost) :
 ```
 
 !!! note
-    This example is mainly for tutorial purposes. You probably will achieve better
+    This example is mainly for tutorial purposes. You will achieve better
     performance by using  directly one of the shortest paths algorithms from
     [Graphs.jl](https://juliagraphs.org/Graphs.jl/dev/algorithms/shortestpaths/#Shortest-paths)
     or implementing your own Dijkstra/dynamic programming algorithm.
