@@ -8,7 +8,7 @@ the usual shortest path problem (no constraints and linear cost) :
 ```
 
 !!! note
-    This example is mainly for tutorial purposes. You probably will achieve better
+    This example is mainly for tutorial purposes. You will achieve better
     performance by using  directly one of the shortest paths algorithms from
     [Graphs.jl](https://juliagraphs.org/Graphs.jl/dev/algorithms/shortestpaths/#Shortest-paths)
     or implementing your own Dijkstra/dynamic programming algorithm.
@@ -40,7 +40,7 @@ cost_matrix = sparse(I, J, distance_list);
 
 # Compute the shortest path
 
-p_star, c_star = basic_shortest_path(g, cost_matrix)
+p_star, c_star = basic_shortest_path(g, 1, nb_vertices, cost_matrix)
 @info "Solution found" c_star p_star'
 
 # We can check that we obtain the same results with the dynamic programming algorithm from Graphs.jl
