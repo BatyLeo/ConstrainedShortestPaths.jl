@@ -26,19 +26,12 @@ end
 makedocs(;
     modules=[ConstrainedShortestPaths],
     authors="BatyLeo and contributors",
-    repo="https://github.com/BatyLeo/ConstrainedShortestPaths.jl/blob/{commit}{path}#{line}",
     sitename="ConstrainedShortestPaths.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://BatyLeo.github.io/ConstrainedShortestPaths.jl",
-        assets=String[],
-        collapselevel=1,
-    ),
+    format=Documenter.HTML(),
     pages=[
         "Home" => "index.md",
         "maths.md",
         "Tutorial" => ["$tuto.md" for tuto in tuto_list],
-        #"$(tuto_list[end]).md",
         "api.md",
     ],
 )
