@@ -63,13 +63,12 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
 end
 
 function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::Float64)
-    # @info g, delay, slack
     f = if slack == Inf
         piecewise_linear()
     else
-        piecewise_linear(1.0, slack, delay) # PiecewiseLinear(1.0, slack, delay)
+        piecewise_linear(1.0, slack, delay)
     end
-    return f + g ∘ f # compose(g, f)
+    return f + g ∘ f
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
