@@ -24,7 +24,7 @@ struct StochasticBackwardFunction
     λ_value::Float64
 end
 
-function <=(r1::StochasticForwardResource, r2::StochasticForwardResource)
+function Base.:<=(r1::StochasticForwardResource, r2::StochasticForwardResource)
     if r1.c - r1.λ > r2.c - r2.λ
         return false
     end
@@ -44,7 +44,7 @@ function meet(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
     )
 end
 
-function minimum(r_vec::Vector{StochasticBackwardResource})
+function Base.minimum(r_vec::Vector{StochasticBackwardResource})
     res = r_vec[1]
     for resource in r_vec[2:end]
         res = meet(res, resource)

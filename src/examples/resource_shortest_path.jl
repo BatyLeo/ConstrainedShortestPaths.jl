@@ -5,7 +5,7 @@ struct RSPResource
     w::Vector{Float64}
 end
 
-function <=(r1::RSPResource, r2::RSPResource)
+function Base.:<=(r1::RSPResource, r2::RSPResource)
     if r1.c > r2.c
         return false
     end
@@ -17,7 +17,7 @@ function <=(r1::RSPResource, r2::RSPResource)
     return true
 end
 
-function minimum(R::Vector{RSPResource})
+function Base.minimum(R::Vector{RSPResource})
     new_c = minimum(r.c for r in R)
     new_w = zero(R[1].w)
     for i in eachindex(new_w)

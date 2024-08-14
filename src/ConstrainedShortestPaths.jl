@@ -6,7 +6,6 @@ using PiecewiseLinearFunctions: PiecewiseLinearFunction
 using SimpleTraits
 using SparseArrays
 using Statistics: mean
-import Base: <=, minimum, +
 
 include("utils/utils.jl")
 include("algorithms.jl")
