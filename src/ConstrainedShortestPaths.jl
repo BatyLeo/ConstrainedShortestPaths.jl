@@ -9,7 +9,6 @@ using Statistics: mean
 import Base: <=, minimum, +
 
 include("utils/utils.jl")
-# include("utils/piecewise_linear.jl")
 include("algorithms.jl")
 include("examples/basic_shortest_path.jl")
 include("examples/resource_shortest_path.jl")
@@ -21,6 +20,5 @@ export generalized_constrained_shortest_path,
     generalized_constrained_shortest_path_with_threshold
 export compute_bounds, generalized_a_star, generalized_a_star_with_threshold, CSPInstance
 export remove_dominated!
-# export PiecewiseLinear, compose, intersection, meet
 
 end
