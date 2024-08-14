@@ -3,7 +3,7 @@ using Graphs
 using SparseArrays
 
 @testset "Path digraph" begin
-    m = 5
+    m = 5  # number of scenarios
     nb_vertices = 10
 
     graph = path_digraph(nb_vertices)

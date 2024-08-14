@@ -1,3 +1,7 @@
+function piecewise_linear(final_slope::Float64=0.0, slack::Float64=0.0, delay::Float64=0.0)
+    return PiecewiseLinearFunction([slack], [delay], 0.0, final_slope)
+end
+
 struct StochasticForwardResource
     c::Float64
     xi::Vector{Float64}
@@ -5,7 +9,7 @@ struct StochasticForwardResource
 end
 
 struct StochasticBackwardResource
-    g::Vector{PiecewiseLinear}
+    g::Vector{PiecewiseLinearFunction{Float64}}
     λ::Float64
 end
 struct StochasticForwardFunction
@@ -36,7 +40,7 @@ end
 
 function meet(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
     return StochasticBackwardResource(
-        [meet(g1, g2) for (g1, g2) in zip(r1.g, r2.g)], max(r1.λ, r2.λ)
+        [min(g1, g2) for (g1, g2) in zip(r1.g, r2.g)], max(r1.λ, r2.λ)
     )
 end
 
@@ -58,9 +62,14 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     return StochasticForwardResource(new_c, new_xi, new_λ), true
 end
 
-function _backward_scenario(g::PiecewiseLinear, delay::Float64, slack::Float64)
-    f = PiecewiseLinear(1.0, slack, delay)
-    return f + compose(g, f)
+function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::Float64)
+    # @info g, delay, slack
+    f = if slack == Inf
+        piecewise_linear()
+    else
+        piecewise_linear(1.0, slack, delay) # PiecewiseLinear(1.0, slack, delay)
+    end
+    return f + g ∘ f # compose(g, f)
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
@@ -103,11 +112,12 @@ Compute stochastic routing shortest path between first and last vertices of grap
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
+    @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     nb_scenarios = size(delays, 2)
 
     origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
     destination_backward_resource = StochasticBackwardResource(
-        [PiecewiseLinear() for _ in 1:nb_scenarios], 0
+        [piecewise_linear() for _ in 1:nb_scenarios], 0
     )
 
     I = [src(e) for e in edges(graph)]
@@ -148,7 +158,7 @@ end
 
     origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
     destination_backward_resource = StochasticBackwardResource(
-        [PiecewiseLinear() for _ in 1:nb_scenarios], 0
+        [piecewise_linear() for _ in 1:nb_scenarios], 0
     )
 
     I = [src(e) for e in edges(graph)]
