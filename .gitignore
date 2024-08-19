@@ -5,3 +5,4 @@
 /docs/build/
 scripts
 .vscode
+debug.jl

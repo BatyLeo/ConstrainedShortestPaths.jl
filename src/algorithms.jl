@@ -32,17 +32,17 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
     instance::CSPInstance{T,G}; kwargs...
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
-    nb_vertices = nv(instance.graph)
 
     vertices_order = topological_order(graph, origin_vertex, destination_vertex)
 
-    bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
+    bounds = Dict{Int,typeof(instance.destination_backward_resource)}()
+    # bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
     bounds[destination_vertex] = instance.destination_backward_resource
 
     for vertex in vertices_order[2:end]
         vector = [
             instance.backward_functions[vertex, neighbor](bounds[neighbor]; kwargs...) for
-            neighbor in outneighbors(graph, vertex)
+            neighbor in outneighbors(graph, vertex) if haskey(bounds, neighbor)
         ]
         bounds[vertex] = minimum(vector)
     end
@@ -57,7 +57,7 @@ Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
 @traitfn function generalized_a_star(
-    instance::CSPInstance{T,G}, bounds::AbstractVector; kwargs...
+    instance::CSPInstance{T,G}, bounds::AbstractDict; kwargs...
 ) where {T,G<:AbstractGraph{T};IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
     nb_vertices = nv(graph)
@@ -80,6 +80,9 @@ Perform generalized A star algorithm on instnace using bounds
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
+            if !haskey(bounds, w)
+                continue
+            end
             q = copy(p)
             push!(q, w)
             rp = forward_resources[p]
@@ -110,7 +113,7 @@ end
 Compute all paths below threshold.
 """
 @traitfn function generalized_a_star_with_threshold(
-    instance::CSPInstance{T,G}, bounds::AbstractVector, threshold::Float64; kwargs...
+    instance::CSPInstance{T,G}, bounds::AbstractDict, threshold::Float64; kwargs...
 ) where {T,G<:AbstractGraph;IsDirected{G}}
     (; graph, origin_vertex, destination_vertex) = instance
 

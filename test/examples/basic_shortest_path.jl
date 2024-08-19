@@ -29,7 +29,10 @@ end
 
 @testset "Random graphs" begin
     n = 100
-    nb_vertices = 30
+    nb_vertices = 50
+    graphs = []
+    weights = []
+    st = []
     for i in 1:n
         Random.seed!(i)
         graph = random_acyclic_digraph(nb_vertices)
@@ -42,6 +45,7 @@ end
         s = rand(1:(nb_vertices - 1))
         t = rand((s + 1):nb_vertices)
 
+        p_star, c_star = basic_shortest_path(graph, s, t, w)
         p_star, c_star = basic_shortest_path(graph, s, t, w)
         p = enumerate_paths(bellman_ford_shortest_paths(graph, s, w), t)
         c = sum(w[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))

@@ -20,11 +20,6 @@ include("utils.jl")
         include("code.jl")
     end
 
-    # @testset "PiecewiseLinear" begin
-    #     @info "Running piecewise linear tests..."
-    #     include("piecewise_linear.jl")
-    # end
-
     @testset "Examples" verbose = true begin
         @testset "Basic Shortest Path" begin
             @info "Running basic shortest path tests..."
