@@ -30,9 +30,6 @@ end
 @testset "Random graphs" begin
     n = 100
     nb_vertices = 50
-    graphs = []
-    weights = []
-    st = []
     for i in 1:n
         rng = StableRNG(i)
         graph = random_acyclic_digraph(nb_vertices, rng)
