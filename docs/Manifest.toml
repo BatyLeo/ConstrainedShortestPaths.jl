@@ -379,9 +379,9 @@ version = "2.8.1"
 
 [[deps.PiecewiseLinearFunctions]]
 deps = ["DocStringExtensions"]
-path = "../../PiecewiseLinearFunctions.jl"
+git-tree-sha1 = "354fc89a695fa5e635210d611bcc10d3ed8dffcb"
 uuid = "08f3856d-0b18-48ce-8d4b-10c3630068d6"
-version = "0.0.1"
+version = "0.1.0"
 
     [deps.PiecewiseLinearFunctions.extensions]
     PiecewiseLinearFunctionsPlotExt = "Plots"
