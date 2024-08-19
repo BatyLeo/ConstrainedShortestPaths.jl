@@ -59,7 +59,7 @@ end
 # Wrapper
 
 """
-    resource_shortest_path(g, s, t, distmx, costmx)
+$TYPEDSIGNATURES
 
 Compute resource contrained shortest path between vertices `s` and `t` of graph `g`.
 
@@ -82,7 +82,6 @@ function resource_shortest_path(
     distmx::AbstractMatrix,
     costmx::Array{Float64,3},
 ) where {T}
-    @assert is_directed(graph)
     # origin forward resource and backward forward resource set to 0
     resource = RSPResource(0.0, zero(max_costs))
 

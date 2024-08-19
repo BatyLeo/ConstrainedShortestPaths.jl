@@ -28,7 +28,7 @@ end
 # Wrapper
 
 """
-    basic_shortest_path(graph, distmx=weights(graph), s, t)
+$TYPEDSIGNATURES
 
 Compute shortest path between vertices `s` and `t` of graph `graph`.
 
@@ -44,7 +44,6 @@ Compute shortest path between vertices `s` and `t` of graph `graph`.
 function basic_shortest_path(
     graph::AbstractGraph{T}, s::T, t::T, distmx::AbstractMatrix=weights(graph)
 ) where {T}
-    @assert is_directed(graph)
     # origin forward resource and backward forward resource set to 0
     resource = 0.0
 

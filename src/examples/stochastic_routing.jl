@@ -90,9 +90,9 @@ end
 ## General wrapper
 
 """
-    stochastic_routing_shortest_path(graph, slacks, delays)
+$TYPEDSIGNATURES
 
-Compute stochastic routing shortest path between first and last vertices of graph `graph`.
+Compute stochastic routing shortest path between `origin_vertex` and `destination_vertex` vertices of graph `graph`.
 
 # Arguments
 - `graph::AbstractGraph`: acyclic directed graph.
@@ -111,7 +111,6 @@ function stochastic_routing_shortest_path(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
 ) where {T}
-    @assert is_directed(graph)
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     nb_scenarios = size(delays, 2)
 
@@ -147,6 +146,11 @@ function stochastic_routing_shortest_path(
     return generalized_constrained_shortest_path(instance)
 end
 
+"""
+$TYPEDSIGNATURES
+
+Compute stochastic routing shortest path between first and last vertices of graph `graph`.
+"""
 function stochastic_routing_shortest_path_with_threshold(
     graph::AbstractGraph,
     slacks::AbstractMatrix,
@@ -154,7 +158,6 @@ function stochastic_routing_shortest_path_with_threshold(
     λ_values::AbstractVector=zeros(nv(graph));
     threshold,
 )
-    @assert is_directed(graph)
     nb_scenarios = size(delays, 2)
 
     origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
