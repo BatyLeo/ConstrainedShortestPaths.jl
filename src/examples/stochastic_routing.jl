@@ -38,18 +38,10 @@ function Base.:<=(r1::StochasticForwardResource, r2::StochasticForwardResource)
     return true
 end
 
-function meet(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
-    return StochasticBackwardResource(
-        [min(g1, g2) for (g1, g2) in zip(r1.g, r2.g)], max(r1.λ, r2.λ)
-    )
-end
-
-function Base.minimum(r_vec::Vector{StochasticBackwardResource})
-    res = r_vec[1]
-    for resource in r_vec[2:end]
-        res = meet(res, resource)
-    end
-    return res
+function Base.min(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
+    new_g = min.(r1.g, r2.g)
+    new_λ = max(r1.λ, r2.λ)
+    return StochasticBackwardResource(new_g, new_λ)
 end
 
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)

@@ -29,7 +29,6 @@ but simplified with only one constraint.
 
 using ConstrainedShortestPaths
 using Graphs, SparseArrays
-import Base: <=, minimum
 
 #=
 ## Resources
@@ -43,12 +42,14 @@ end
 
 # `Base.<=` and `Base.minimum`
 
-function <=(r1::Resource, r2::Resource)
+function Base.:<=(r1::Resource, r2::Resource)
     return r1.c <= r2.c && r1.w <= r2.w
 end
 
-function minimum(R::Vector{Resource})
-    return Resource(minimum(r.c for r in R), minimum(r.w for r in R))
+function Base.min(r₁::Resource, r₂::Resource)
+    new_c = min(r₁.c, r₂.c)
+    new_w = min(r₁.w, r₂.w)
+    return Resource(new_c, new_w)
 end
 
 #=
