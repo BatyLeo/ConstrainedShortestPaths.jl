@@ -6,6 +6,7 @@ using Graphs
 using JuMP
 using Random
 using SparseArrays
+using StableRNGs
 using UnicodePlots
 
 const SHOW_PLOTS = false

@@ -34,16 +34,16 @@ end
     weights = []
     st = []
     for i in 1:n
-        Random.seed!(i)
-        graph = random_acyclic_digraph(nb_vertices)
+        rng = StableRNG(i)
+        graph = random_acyclic_digraph(nb_vertices, rng)
 
-        weight_list = [rand() * 50 - 20 for _ in 1:ne(graph)]
+        weight_list = [rand(rng) * 50 - 20 for _ in 1:ne(graph)]
         Iw = [src(e) for e in edges(graph)]
         Jw = [dst(e) for e in edges(graph)]
         w = sparse(Iw, Jw, weight_list, nb_vertices, nb_vertices)
 
-        s = rand(1:(nb_vertices - 1))
-        t = rand((s + 1):nb_vertices)
+        s = rand(rng, 1:(nb_vertices - 1))
+        t = rand(rng, (s + 1):nb_vertices)
 
         p_star, c_star = basic_shortest_path(graph, s, t, w)
         p_star, c_star = basic_shortest_path(graph, s, t, w)
