@@ -103,14 +103,15 @@ Compute stochastic routing shortest path between first and last vertices of grap
 - `p_star::Vector{Int}`: optimal path found.
 - `c_star::Float64`: length of path `p_star`.
 """
-@traitfn function stochastic_routing_shortest_path(
-    graph::G,
+function stochastic_routing_shortest_path(
+    graph::AbstractGraph{T},
     slacks::AbstractMatrix,
     delays::AbstractMatrix,
     λ_values::AbstractVector=zeros(nv(graph));
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T}
+    @assert is_directed(graph)
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     nb_scenarios = size(delays, 2)
 
@@ -146,13 +147,14 @@ Compute stochastic routing shortest path between first and last vertices of grap
     return generalized_constrained_shortest_path(instance)
 end
 
-@traitfn function stochastic_routing_shortest_path_with_threshold(
-    graph::G,
+function stochastic_routing_shortest_path_with_threshold(
+    graph::AbstractGraph,
     slacks::AbstractMatrix,
     delays::AbstractMatrix,
     λ_values::AbstractVector=zeros(nv(graph));
     threshold,
-) where {G <: AbstractGraph; IsDirected{G}}
+)
+    @assert is_directed(graph)
     nb_scenarios = size(delays, 2)
 
     origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)

@@ -22,15 +22,14 @@ Base.@kwdef struct CSPInstance{
     forward_functions::FF
     backward_functions::BF
 end
+# TODO: tets in the constructor if the graph is directed
 
 """
     compute_bounds(instance)
 
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
-@traitfn function compute_bounds(
-    instance::CSPInstance{T,G}; kwargs...
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+function compute_bounds(instance::CSPInstance{T,G}; kwargs...) where {T,G<:AbstractGraph{T}}
     (; graph, origin_vertex, destination_vertex) = instance
 
     vertices_order = topological_order(graph, origin_vertex, destination_vertex)
@@ -56,9 +55,9 @@ end
 Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
-@traitfn function generalized_a_star(
+function generalized_a_star(
     instance::CSPInstance{T,G}, bounds::AbstractDict; kwargs...
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T,G<:AbstractGraph{T}}
     (; graph, origin_vertex, destination_vertex) = instance
     nb_vertices = nv(graph)
 
@@ -112,9 +111,9 @@ end
 
 Compute all paths below threshold.
 """
-@traitfn function generalized_a_star_with_threshold(
+function generalized_a_star_with_threshold(
     instance::CSPInstance{T,G}, bounds::AbstractDict, threshold::Float64; kwargs...
-) where {T,G<:AbstractGraph;IsDirected{G}}
+) where {T,G<:AbstractGraph}
     (; graph, origin_vertex, destination_vertex) = instance
 
     empty_path = [origin_vertex]
@@ -160,9 +159,9 @@ end
 
 Compute the shortest path of `instance`.
 """
-@traitfn function generalized_constrained_shortest_path(
+function generalized_constrained_shortest_path(
     instance::CSPInstance{T,G}; kwargs...
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T,G<:AbstractGraph{T}}
     bounds = compute_bounds(instance; kwargs...)
     return generalized_a_star(instance, bounds; kwargs...)
 end
@@ -172,9 +171,9 @@ end
 
 Compute shortest path between first and last nodes of `instance`
 """
-@traitfn function generalized_constrained_shortest_path_with_threshold(
+function generalized_constrained_shortest_path_with_threshold(
     instance::CSPInstance{T,G}, threshold::Float64; kwargs...
-) where {T,G<:AbstractGraph;IsDirected{G}}
+) where {T,G<:AbstractGraph}
     bounds = compute_bounds(instance; kwargs...)
     return generalized_a_star_with_threshold(instance, bounds, threshold; kwargs...)
 end

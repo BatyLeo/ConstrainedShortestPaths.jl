@@ -1,10 +1,9 @@
 module ConstrainedShortestPaths
 
-using DataStructures
-using Graphs
+using DataStructures: PriorityQueue, enqueue!, dequeue!, isempty
+using Graphs: AbstractGraph, is_directed, nv, weights, src, dst, edges, outneighbors
 using PiecewiseLinearFunctions: PiecewiseLinearFunction
-using SimpleTraits
-using SparseArrays
+using SparseArrays: sparse
 using Statistics: mean
 
 include("utils/utils.jl")

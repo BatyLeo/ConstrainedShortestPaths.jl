@@ -74,14 +74,15 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
 - `p_star::Vector{Int}`: optimal path found.
 - `c_star::Float64`: length of path `p_star`.
 """
-@traitfn function resource_shortest_path(
-    graph::G,
+function resource_shortest_path(
+    graph::AbstractGraph{T},
     s::T,
     t::T,
     max_costs::AbstractVector,
     distmx::AbstractMatrix,
     costmx::Array{Float64,3},
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T}
+    @assert is_directed(graph)
     # origin forward resource and backward forward resource set to 0
     resource = RSPResource(0.0, zero(max_costs))
 
