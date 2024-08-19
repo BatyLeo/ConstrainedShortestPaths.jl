@@ -19,9 +19,9 @@ function remove_dominated!(Mw::AbstractVector{R}, rq::R) where {R}
 end
 
 # Topological order computing
-@traitfn function scan!(
+function scan!(
     graph::G, vertex::T, order::Vector{T}, opened::BitVector
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T,G<:AbstractGraph{T}}
     opened[vertex] = true
     for neighbour in outneighbors(graph, vertex)
         if opened[neighbour]
@@ -33,9 +33,7 @@ end
     return nothing
 end
 
-@traitfn function topological_order(
-    graph::G, s::T, t::T
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+function topological_order(graph::G, s::T, t::T) where {T,G<:AbstractGraph{T}}
     order = Int[]
     opened = falses(nv(graph))
     scan!(graph, s, order, opened)

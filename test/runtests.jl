@@ -6,6 +6,7 @@ using Graphs
 using JuMP
 using Random
 using SparseArrays
+using StableRNGs
 using UnicodePlots
 
 const SHOW_PLOTS = false
@@ -19,11 +20,6 @@ include("utils.jl")
         @info "Code quality and correctness tests..."
         include("code.jl")
     end
-
-    # @testset "PiecewiseLinear" begin
-    #     @info "Running piecewise linear tests..."
-    #     include("piecewise_linear.jl")
-    # end
 
     @testset "Examples" verbose = true begin
         @testset "Basic Shortest Path" begin

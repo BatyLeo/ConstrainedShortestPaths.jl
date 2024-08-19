@@ -134,27 +134,27 @@ end
     for nb_scenarios in 1:5
         for nb_vertices in 10:15
             for i in 1:n
-                Random.seed!(i)
+                rng = StableRNG(i)
                 graph = random_acyclic_digraph(
-                    nb_vertices; all_connected_to_source_and_destination=true
+                    nb_vertices, rng; all_connected_to_source_and_destination=true
                 )
 
                 nb_edges = ne(graph)
                 I = [src(e) for e in edges(graph)]
                 J = [dst(e) for e in edges(graph)]
 
-                delays = rand(nb_vertices, nb_scenarios) * 10
+                delays = rand(rng, nb_vertices, nb_scenarios) * 10
                 delays[end, :] .= 0.0
                 slacks_theory = [
                     if dst(e) == nb_vertices
                         [Inf for _ in 1:nb_scenarios]
                     else
-                        [rand() * 10 for _ in 1:nb_scenarios]
+                        [rand(rng) * 10 for _ in 1:nb_scenarios]
                     end for e in edges(graph)
                 ]
                 slack_matrix = sparse(I, J, slacks_theory)
 
-                # Column generation using constrained shortest path algorithm
+                # Column generation using constrained shortest path algorithm, linear relaxation
                 initial_paths = [[1, v, nb_vertices] for v in 2:(nb_vertices - 1)]
                 value, obj2, paths, dual, dual_new = stochastic_PLNE(
                     graph, slack_matrix, delays, initial_paths
@@ -163,6 +163,7 @@ end
                 # Exact resolution
                 obj, sol = solve_scenarios(graph, slack_matrix, delays)
 
+                # Restricted master heuristic
                 obj3, y3 = column_generation(
                     graph, slack_matrix, delays, cat(paths, initial_paths; dims=1)
                 )

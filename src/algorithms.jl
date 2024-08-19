@@ -1,48 +1,75 @@
 """
-    CSPInstance{G,FR,BR,C,FF,BF}
+$TYPEDEF
 
-# Attributes
-
-- `graph`
-- `origin_forward_resource`
-- `destination_backward_resource`
-- `cost_function`
-- `forward_functions`
-- `backward_functions`
+# Fields
+$TYPEDFIELDS
 """
-Base.@kwdef struct CSPInstance{
-    T,G<:AbstractGraph{T},FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix
-}
-    graph::G  # assumption : node 1 is origin, last node is destination
+struct CSPInstance{T,G<:AbstractGraph{T},FR,BR,C,FF<:AbstractMatrix,BF<:AbstractMatrix}
+    "acyclic digraph in which to compute the shortest path"
+    graph::G
+    "origin vertex of path"
     origin_vertex::T
+    "destination vertex of path"
     destination_vertex::T
+    "forward resource at the origin vertex"
     origin_forward_resource::FR
+    "backward resource at the destination vertex"
     destination_backward_resource::BR
+    "cost function"
     cost_function::C
+    "forward functions along edges"
     forward_functions::FF
+    "backward functions along edges"
     backward_functions::BF
 end
 
 """
-    compute_bounds(instance)
+$TYPEDSIGNATURES
+
+Constructor for [`CSPInstance`](@ref).
+"""
+function CSPInstance(;
+    graph,
+    origin_vertex,
+    destination_vertex,
+    origin_forward_resource,
+    destination_backward_resource,
+    cost_function,
+    forward_functions,
+    backward_functions,
+)
+    @assert is_directed(graph) "`graph` must be a directed graph"
+    @assert !is_cyclic(graph) "`graph` must be acyclic"
+    return CSPInstance(
+        graph,
+        origin_vertex,
+        destination_vertex,
+        origin_forward_resource,
+        destination_backward_resource,
+        cost_function,
+        forward_functions,
+        backward_functions,
+    )
+end
+
+"""
+$TYPEDSIGNATURES
 
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
-@traitfn function compute_bounds(
-    instance::CSPInstance{T,G}; kwargs...
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+function compute_bounds(instance::CSPInstance{T,G}; kwargs...) where {T,G<:AbstractGraph{T}}
     (; graph, origin_vertex, destination_vertex) = instance
-    nb_vertices = nv(instance.graph)
 
     vertices_order = topological_order(graph, origin_vertex, destination_vertex)
 
-    bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
+    bounds = Dict{Int,typeof(instance.destination_backward_resource)}()
+    # bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
     bounds[destination_vertex] = instance.destination_backward_resource
 
     for vertex in vertices_order[2:end]
         vector = [
             instance.backward_functions[vertex, neighbor](bounds[neighbor]; kwargs...) for
-            neighbor in outneighbors(graph, vertex)
+            neighbor in outneighbors(graph, vertex) if haskey(bounds, neighbor)
         ]
         bounds[vertex] = minimum(vector)
     end
@@ -51,14 +78,14 @@ Compute backward bounds of instance (see [Computing bounds](@ref)).
 end
 
 """
-    generalized_a_star(instance, s, t, bounds)
+$TYPEDSIGNATURES
 
 Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
-@traitfn function generalized_a_star(
-    instance::CSPInstance{T,G}, bounds::AbstractVector; kwargs...
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+function generalized_a_star(
+    instance::CSPInstance{T,G}, bounds::AbstractDict; kwargs...
+) where {T,G<:AbstractGraph{T}}
     (; graph, origin_vertex, destination_vertex) = instance
     nb_vertices = nv(graph)
 
@@ -80,6 +107,9 @@ Perform generalized A star algorithm on instnace using bounds
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
+            if !haskey(bounds, w)
+                continue
+            end
             q = copy(p)
             push!(q, w)
             rp = forward_resources[p]
@@ -105,13 +135,13 @@ Perform generalized A star algorithm on instnace using bounds
 end
 
 """
-    generalized_a_star_with_threshold(instance, bounds, threshold)
+$TYPEDSIGNATURES
 
 Compute all paths below threshold.
 """
-@traitfn function generalized_a_star_with_threshold(
-    instance::CSPInstance{T,G}, bounds::AbstractVector, threshold::Float64; kwargs...
-) where {T,G<:AbstractGraph;IsDirected{G}}
+function generalized_a_star_with_threshold(
+    instance::CSPInstance{T,G}, bounds::AbstractDict, threshold::Float64; kwargs...
+) where {T,G<:AbstractGraph}
     (; graph, origin_vertex, destination_vertex) = instance
 
     empty_path = [origin_vertex]
@@ -153,25 +183,25 @@ Compute all paths below threshold.
 end
 
 """
-    generalized_constrained_shortest_path(instance, s, t)
+$TYPEDSIGNATURES
 
 Compute the shortest path of `instance`.
 """
-@traitfn function generalized_constrained_shortest_path(
+function generalized_constrained_shortest_path(
     instance::CSPInstance{T,G}; kwargs...
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T,G<:AbstractGraph{T}}
     bounds = compute_bounds(instance; kwargs...)
     return generalized_a_star(instance, bounds; kwargs...)
 end
 
 """
-    generalized_constrained_shortest_path(instance)
+$TYPEDSIGNATURES
 
 Compute shortest path between first and last nodes of `instance`
 """
-@traitfn function generalized_constrained_shortest_path_with_threshold(
+function generalized_constrained_shortest_path_with_threshold(
     instance::CSPInstance{T,G}, threshold::Float64; kwargs...
-) where {T,G<:AbstractGraph;IsDirected{G}}
+) where {T,G<:AbstractGraph}
     bounds = compute_bounds(instance; kwargs...)
     return generalized_a_star_with_threshold(instance, bounds, threshold; kwargs...)
 end

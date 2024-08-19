@@ -1,5 +1,8 @@
 function random_acyclic_digraph(
-    nb_vertices::Integer; p=0.4, all_connected_to_source_and_destination=false
+    nb_vertices::Integer,
+    rng::AbstractRNG;
+    p=0.4,
+    all_connected_to_source_and_destination=false,
 )
     edge_list = []
     for u in 1:nb_vertices
@@ -8,7 +11,7 @@ function random_acyclic_digraph(
         end
 
         for v in (u + 1):(u == 1 ? nb_vertices - 1 : nb_vertices)
-            if rand() <= p
+            if rand(rng) <= p
                 push!(edge_list, (u, v))
             end
         end

@@ -5,7 +5,7 @@ struct RSPResource
     w::Vector{Float64}
 end
 
-function <=(r1::RSPResource, r2::RSPResource)
+function Base.:<=(r1::RSPResource, r2::RSPResource)
     if r1.c > r2.c
         return false
     end
@@ -17,12 +17,9 @@ function <=(r1::RSPResource, r2::RSPResource)
     return true
 end
 
-function minimum(R::Vector{RSPResource})
-    new_c = minimum(r.c for r in R)
-    new_w = zero(R[1].w)
-    for i in eachindex(new_w)
-        new_w[i] = minimum(r.w[i] for r in R)
-    end
+function Base.min(r₁::RSPResource, r₂::RSPResource)
+    new_c = min(r₁.c, r₂.c)
+    new_w = min.(r₁.w, r₂.w)
     return RSPResource(new_c, new_w)
 end
 
@@ -59,7 +56,7 @@ end
 # Wrapper
 
 """
-    resource_shortest_path(g, s, t, distmx, costmx)
+$TYPEDSIGNATURES
 
 Compute resource contrained shortest path between vertices `s` and `t` of graph `g`.
 
@@ -74,14 +71,14 @@ Compute resource contrained shortest path between vertices `s` and `t` of graph 
 - `p_star::Vector{Int}`: optimal path found.
 - `c_star::Float64`: length of path `p_star`.
 """
-@traitfn function resource_shortest_path(
-    graph::G,
+function resource_shortest_path(
+    graph::AbstractGraph{T},
     s::T,
     t::T,
     max_costs::AbstractVector,
     distmx::AbstractMatrix,
     costmx::Array{Float64,3},
-) where {T,G<:AbstractGraph{T};IsDirected{G}}
+) where {T}
     # origin forward resource and backward forward resource set to 0
     resource = RSPResource(0.0, zero(max_costs))
 
