@@ -17,15 +17,6 @@ function Base.:<=(r1::RSPResource, r2::RSPResource)
     return true
 end
 
-# function Base.minimum(R::Vector{RSPResource})
-#     new_c = minimum(r.c for r in R)
-#     new_w = zero(R[1].w)
-#     for i in eachindex(new_w)
-#         new_w[i] = minimum(r.w[i] for r in R)
-#     end
-#     return RSPResource(new_c, new_w)
-# end
-
 function Base.min(r₁::RSPResource, r₂::RSPResource)
     new_c = min(r₁.c, r₂.c)
     new_w = min.(r₁.w, r₂.w)
