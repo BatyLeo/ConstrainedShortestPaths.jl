@@ -3,7 +3,16 @@ module ConstrainedShortestPaths
 using DataStructures: PriorityQueue, enqueue!, dequeue!, isempty
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS, TYPEDSIGNATURES
 using Graphs:
-    AbstractGraph, is_directed, is_cyclic, nv, weights, src, dst, edges, outneighbors
+    AbstractGraph,
+    is_directed,
+    is_cyclic,
+    nv,
+    weights,
+    src,
+    dst,
+    edges,
+    outneighbors,
+    induced_subgraph
 using PiecewiseLinearFunctions: PiecewiseLinearFunction
 using SparseArrays: sparse
 using Statistics: mean

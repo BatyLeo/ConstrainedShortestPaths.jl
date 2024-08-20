@@ -21,6 +21,10 @@ struct CSPInstance{T,G<:AbstractGraph{T},FR,BR,C,FF<:AbstractMatrix,BF<:Abstract
     forward_functions::FF
     "backward functions along edges"
     backward_functions::BF
+    "bit vector indicating if a vertices will be useful in the path computation, i.e. if there is a path from origin to destination that goes through it"
+    is_useful::BitVector
+    "precomputed topological ordering of useful vertices, from destination to source"
+    topological_ordering::Vector{T}
 end
 
 """
@@ -40,6 +44,9 @@ function CSPInstance(;
 )
     @assert is_directed(graph) "`graph` must be a directed graph"
     @assert !is_cyclic(graph) "`graph` must be acyclic"
+    useful_vertices = topological_order(graph, origin_vertex, destination_vertex)
+    is_useful = falses(nv(graph))
+    is_useful[useful_vertices] .= true
     return CSPInstance(
         graph,
         origin_vertex,
@@ -49,6 +56,8 @@ function CSPInstance(;
         cost_function,
         forward_functions,
         backward_functions,
+        is_useful,
+        useful_vertices,
     )
 end
 
@@ -58,18 +67,19 @@ $TYPEDSIGNATURES
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
 function compute_bounds(instance::CSPInstance{T,G}; kwargs...) where {T,G<:AbstractGraph{T}}
-    (; graph, origin_vertex, destination_vertex) = instance
+    (; graph, destination_vertex, topological_ordering, is_useful) = instance
 
-    vertices_order = topological_order(graph, origin_vertex, destination_vertex)
+    vertices_order = topological_ordering
+    @assert vertices_order[1] == destination_vertex
 
     bounds = Dict{Int,typeof(instance.destination_backward_resource)}()
-    # bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nb_vertices)
+    # bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nv(graph))
     bounds[destination_vertex] = instance.destination_backward_resource
 
     for vertex in vertices_order[2:end]
         vector = [
             instance.backward_functions[vertex, neighbor](bounds[neighbor]; kwargs...) for
-            neighbor in outneighbors(graph, vertex) if haskey(bounds, neighbor)
+            neighbor in outneighbors(graph, vertex) if is_useful[neighbor]
         ]
         bounds[vertex] = minimum(vector)
     end
@@ -84,9 +94,9 @@ Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
 function generalized_a_star(
-    instance::CSPInstance{T,G}, bounds::AbstractDict; kwargs...
+    instance::CSPInstance{T,G}, bounds; kwargs...
 ) where {T,G<:AbstractGraph{T}}
-    (; graph, origin_vertex, destination_vertex) = instance
+    (; graph, origin_vertex, destination_vertex, is_useful) = instance
     nb_vertices = nv(graph)
 
     empty_path = [origin_vertex]
@@ -107,7 +117,7 @@ function generalized_a_star(
         p = dequeue!(L)
         v = p[end]
         for w in outneighbors(graph, v)
-            if !haskey(bounds, w)
+            if !is_useful[w]
                 continue
             end
             q = copy(p)
@@ -140,7 +150,7 @@ $TYPEDSIGNATURES
 Compute all paths below threshold.
 """
 function generalized_a_star_with_threshold(
-    instance::CSPInstance{T,G}, bounds::AbstractDict, threshold::Float64; kwargs...
+    instance::CSPInstance{T,G}, bounds, threshold::Float64; kwargs...
 ) where {T,G<:AbstractGraph}
     (; graph, origin_vertex, destination_vertex) = instance
 
