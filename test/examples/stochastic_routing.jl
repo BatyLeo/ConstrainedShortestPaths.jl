@@ -156,7 +156,7 @@ end
 
                 # Column generation using constrained shortest path algorithm, linear relaxation
                 initial_paths = [[1, v, nb_vertices] for v in 2:(nb_vertices - 1)]
-                value, obj2, paths, dual, dual_new = stochastic_PLNE(
+                λ_val, obj2, paths, dual, dual_new = stochastic_PLNE(
                     graph, slack_matrix, delays, initial_paths
                 )
                 _value, _obj2, _paths, _dual, _dual_new = stochastic_PLNE(
@@ -177,6 +177,19 @@ end
 
                 if !(obj ≈ obj2)
                     @info "Not equal" obj obj2 obj3
+                end
+
+                clow = obj2
+                cupp = obj3
+                threshold = cupp - clow
+                if threshold > 0
+                    additional_paths, costs = stochastic_routing_shortest_path_with_threshold(
+                        graph, slack_matrix, delays, λ_val; threshold
+                    )
+                    full_paths = unique(vcat(initial_paths, paths, additional_paths))
+                    obj4, y4 = column_generation(graph, slack_matrix, delays, full_paths)
+                    @test obj4 ≈ cupp || obj4 < cupp
+                    @test obj4 ≈ clow || obj4 > clow
                 end
             end
         end
