@@ -79,6 +79,10 @@ function stochastic_cost(fr::StochasticForwardResource, br::StochasticBackwardRe
     return cp - λ_sum
 end
 
+function partial_stochastic_cost(fr::StochasticForwardResource)
+    return fr.c - fr.λ
+end
+
 ## General wrapper
 
 """
@@ -102,6 +106,7 @@ function stochastic_routing_shortest_path(
     λ_values::AbstractVector=zeros(nv(graph));
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
+    bounding=true,
 ) where {T}
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     nb_scenarios = size(delays, 2)
@@ -117,24 +122,36 @@ function stochastic_routing_shortest_path(
         StochasticForwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
         (u, v) in zip(I, J)
     ]
-    bb = [
-        StochasticBackwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
-        (u, v) in zip(I, J)
-    ]
-
     FF = sparse(I, J, ff)
-    BB = sparse(I, J, bb)
 
-    instance = CSPInstance(;
-        graph,
-        origin_vertex,
-        destination_vertex,
-        origin_forward_resource,
-        destination_backward_resource,
-        cost_function=stochastic_cost,
-        forward_functions=FF,
-        backward_functions=BB,
-    )
+    instance = if bounding
+        bb = [
+            StochasticBackwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
+            (u, v) in zip(I, J)
+        ]
+
+        BB = sparse(I, J, bb)
+
+        CSPInstance(;
+            graph,
+            origin_vertex,
+            destination_vertex,
+            origin_forward_resource,
+            destination_backward_resource,
+            cost_function=stochastic_cost,
+            forward_functions=FF,
+            backward_functions=BB,
+        )
+    else
+        CSPInstance(;
+            graph,
+            origin_vertex,
+            destination_vertex,
+            origin_forward_resource,
+            cost_function=partial_stochastic_cost,
+            forward_functions=FF,
+        )
+    end
     return generalized_constrained_shortest_path(instance)
 end
 

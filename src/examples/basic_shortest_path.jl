@@ -16,10 +16,6 @@ function (f::BSPBackwardExtensionFunction)(q::BSPResource)
     return f.c + q
 end
 
-function BSP_cost(qf::BSPResource, qb::BSPResource)
-    return qf + qb
-end
-
 function remove_dominated!(Mw::Vector{BSPResource}, rq::BSPResource)
     empty!(Mw)
     return Mw = push!(Mw, rq)
@@ -42,7 +38,11 @@ Compute shortest path between vertices `s` and `t` of graph `graph`.
 - `c_star::Float64`: length of path `p_star`.
 """
 function basic_shortest_path(
-    graph::AbstractGraph{T}, s::T, t::T, distmx::AbstractMatrix=weights(graph)
+    graph::AbstractGraph{T},
+    s::T,
+    t::T,
+    distmx::AbstractMatrix=weights(graph);
+    bounding=true,
 ) where {T}
     # origin forward resource and backward forward resource set to 0
     resource = 0.0
@@ -51,19 +51,31 @@ function basic_shortest_path(
     If = [src(e) for e in edges(graph)]
     Jf = [dst(e) for e in edges(graph)]
     ff = [BSPForwardExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
-    fb = [BSPBackwardExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
     FF = sparse(If, Jf, ff)
-    FB = sparse(If, Jf, fb)
 
-    instance = CSPInstance(;
-        graph,
-        origin_vertex=s,
-        destination_vertex=t,
-        origin_forward_resource=resource,
-        destination_backward_resource=resource,
-        cost_function=BSP_cost,
-        forward_functions=FF,
-        backward_functions=FB,
-    )
+    instance = if bounding
+        fb = [BSPBackwardExtensionFunction(distmx[i, j]) for (i, j) in zip(If, Jf)]
+        FB = sparse(If, Jf, fb)
+
+        CSPInstance(;
+            graph,
+            origin_vertex=s,
+            destination_vertex=t,
+            origin_forward_resource=resource,
+            destination_backward_resource=resource,
+            cost_function=Base.:+,
+            forward_functions=FF,
+            backward_functions=FB,
+        )
+    else
+        CSPInstance(;
+            graph,
+            origin_vertex=s,
+            destination_vertex=t,
+            origin_forward_resource=resource,
+            cost_function=identity,
+            forward_functions=FF,
+        )
+    end
     return generalized_constrained_shortest_path(instance)
 end

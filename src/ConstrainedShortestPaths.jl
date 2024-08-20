@@ -18,6 +18,7 @@ using SparseArrays: sparse
 using Statistics: mean
 
 include("utils/utils.jl")
+include("interface.jl")
 include("algorithms.jl")
 include("examples/basic_shortest_path.jl")
 include("examples/resource_shortest_path.jl")

@@ -16,3 +16,7 @@ end
     using JuliaFormatter
     @test format(ConstrainedShortestPaths; verbose=false, overwrite=false)
 end
+
+@testset "Documenter" begin
+    Documenter.doctest(ConstrainedShortestPaths)
+end
