@@ -76,13 +76,18 @@ end
             end
         end
         max_cost = [10.0, 10.0]
-        c = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
+        cc = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:costs_dimension]
         for (e, k) in zip(edges(graph), cost_list)
-            c[e.src, e.dst, :] = k
+            cc[e.src, e.dst, :] = k
         end
 
-        p_star, c_star = resource_shortest_path(graph, 1, nv(graph), max_cost, d, c)
-        c, p = resource_PLNE(graph, d, c, max_cost)
+        c, p = resource_PLNE(graph, d, cc, max_cost)
+        p_star, c_star = resource_shortest_path(graph, 1, nv(graph), max_cost, d, cc)
+        @test c_star ≈ c
+        @test p_star == p
+        p_star, c_star = resource_shortest_path(
+            graph, 1, nv(graph), max_cost, d, cc; bounding=false
+        )
         @test c_star ≈ c
         @test p_star == p
     end

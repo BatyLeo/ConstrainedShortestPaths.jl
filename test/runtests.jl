@@ -1,6 +1,7 @@
 using ConstrainedShortestPaths
 using Test
 
+using Documenter
 using GLPK
 using Graphs
 using JuMP

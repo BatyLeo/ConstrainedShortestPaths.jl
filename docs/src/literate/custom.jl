@@ -115,6 +115,15 @@ fb = [BackwardExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
 FF = sparse(If, Jf, ff);
 FB = sparse(If, Jf, fb);
 
-instance = CSPInstance(graph, 1, nb_vertices, resource, resource, Cost(), FF, FB)
+instance = CSPInstance(;
+    graph,
+    origin_vertex=1,
+    destination_vertex=nb_vertices,
+    origin_forward_resource=resource,
+    destination_backward_resource=resource,
+    cost_function=Cost(),
+    forward_functions=FF,
+    backward_functions=FB,
+)
 (; p_star, c_star) = generalized_constrained_shortest_path(instance; W=W)
 @info "Result" c_star p_star

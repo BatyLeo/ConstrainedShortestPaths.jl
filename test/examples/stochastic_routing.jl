@@ -156,9 +156,13 @@ end
 
                 # Column generation using constrained shortest path algorithm, linear relaxation
                 initial_paths = [[1, v, nb_vertices] for v in 2:(nb_vertices - 1)]
-                value, obj2, paths, dual, dual_new = stochastic_PLNE(
+                λ_val, obj2, paths, dual, dual_new = stochastic_PLNE(
                     graph, slack_matrix, delays, initial_paths
                 )
+                _value, _obj2, _paths, _dual, _dual_new = stochastic_PLNE(
+                    graph, slack_matrix, delays, initial_paths; bounding=false
+                )
+                @test obj2 ≈ _obj2
 
                 # Exact resolution
                 obj, sol = solve_scenarios(graph, slack_matrix, delays)
@@ -167,30 +171,25 @@ end
                 obj3, y3 = column_generation(
                     graph, slack_matrix, delays, cat(paths, initial_paths; dims=1)
                 )
-                # obj4, y4 = column_generation(graph, slack_matrix, delays, cat(paths, initial_paths; dims=1); bin=false)
-                # obj5, y5 = column_generation(graph, slack_matrix, delays, initial_paths; bin=false)
-
-                #@info "Objs" obj2 obj
-                # @info [dual[p] for p in initial_paths]
-                # init = [p for p in initial_paths if dual[p] == 1.0]
-                # @info dual_new
-                # new = [paths[i] for i in eachindex(dual_new) if dual_new[i] == 1.0]
-                # @info value
-                # for p in init
-                #     @info "sum $p" sum(value[i] for i in p) path_cost(p, slack_matrix, delays)
-                # end
-                # for p in new
-                #     @info "sum $p" sum(value[i] for i in p) path_cost(p, slack_matrix, delays)
-                # end
-
-                # @info "" value[1] value[end]
-                # @info "" obj obj2 obj3
 
                 @test obj ≈ obj2 || obj > obj2
                 @test obj ≈ obj3 || obj3 > obj
 
                 if !(obj ≈ obj2)
                     @info "Not equal" obj obj2 obj3
+                end
+
+                clow = obj2
+                cupp = obj3
+                threshold = cupp - clow
+                if threshold > 0
+                    additional_paths, costs = stochastic_routing_shortest_path_with_threshold(
+                        graph, slack_matrix, delays, λ_val; threshold
+                    )
+                    full_paths = unique(vcat(initial_paths, paths, additional_paths))
+                    obj4, y4 = column_generation(graph, slack_matrix, delays, full_paths)
+                    @test obj4 ≈ cupp || obj4 < cupp
+                    @test obj4 ≈ clow || obj4 > clow
                 end
             end
         end

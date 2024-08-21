@@ -8,7 +8,10 @@
 
 ## Overview
 
-This package implements algorithms for solving **Generalized Constrained Shortest Paths** problems. It implements a simplified version of the framework from [Parmentier 2017](https://arxiv.org/abs/1504.07880), restricted to acyclic directed graphs.
+This package implements algorithms for solving (resource) **Constrained Shortest Paths** problems. 
+It implements a generalized A star algorithm with label dominance and optional bounding.
+It is currently restricted to acyclic directed graphs.
+Reference: [https://arxiv.org/abs/1504.07880](https://arxiv.org/abs/1504.07880).
 
 Let $D=(V, A)$ an **acyclic directed graph**, $o, d\in V$ **origin** and **destination** vertices, $c$ a **cost function**, and $\mathcal{P} \subset \mathcal{P}_{od}$ a subset of $o-d$ paths in $G$. This package can compute the corresponding **constrained shortest path**:
 
@@ -23,8 +26,8 @@ See the [documentation](https://batyleo.github.io/ConstrainedShortestPaths.jl) f
 
 ## Installation
 
-To install this package, open a julia REPL and run the following command in pkg mode:
+To install this package, open a julia REPL and run the following command:
 
 ```bash
-add ConstrainedShortestPaths
+]add ConstrainedShortestPaths
 ```

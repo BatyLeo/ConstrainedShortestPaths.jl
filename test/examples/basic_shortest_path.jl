@@ -42,10 +42,13 @@ end
         s = rand(rng, 1:(nb_vertices - 1))
         t = rand(rng, (s + 1):nb_vertices)
 
-        p_star, c_star = basic_shortest_path(graph, s, t, w)
-        p_star, c_star = basic_shortest_path(graph, s, t, w)
         p = enumerate_paths(bellman_ford_shortest_paths(graph, s, w), t)
         c = sum(w[p[i], p[i + 1]] for i in eachindex(p[1:(end - 1)]))
+
+        p_star, c_star = basic_shortest_path(graph, s, t, w)
+        @test c_star == c
+        @test p_star == p
+        p_star, c_star = basic_shortest_path(graph, s, t, w; bounding=false)
         @test c_star == c
         @test p_star == p
     end

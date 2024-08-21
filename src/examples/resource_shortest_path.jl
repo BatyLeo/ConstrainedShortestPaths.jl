@@ -46,11 +46,12 @@ end
 
 ## Cost
 
-struct RSPCost end
-# W::Vector{Float64}
-
-function (cost::RSPCost)(fr::RSPResource, br::RSPResource)
+function RSP_cost(fr::RSPResource, br::RSPResource)
     return fr.c + br.c
+end
+
+function RSP_partial_cost(fr::RSPResource)
+    return fr.c
 end
 
 # Wrapper
@@ -77,7 +78,8 @@ function resource_shortest_path(
     t::T,
     max_costs::AbstractVector,
     distmx::AbstractMatrix,
-    costmx::Array{Float64,3},
+    costmx::Array{Float64,3};
+    bounding=true,
 ) where {T}
     # origin forward resource and backward forward resource set to 0
     resource = RSPResource(0.0, zero(max_costs))
@@ -86,19 +88,31 @@ function resource_shortest_path(
     If = [src(e) for e in edges(graph)]
     Jf = [dst(e) for e in edges(graph)]
     ff = [RSPForwardFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
-    fb = [RSPBackwardFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
     FF = sparse(If, Jf, ff)
-    FB = sparse(If, Jf, fb)
 
-    instance = CSPInstance(;
-        graph,
-        origin_vertex=s,
-        destination_vertex=t,
-        origin_forward_resource=resource,
-        destination_backward_resource=resource,
-        cost_function=RSPCost(),
-        forward_functions=FF,
-        backward_functions=FB,
-    )
+    instance = if bounding
+        fb = [RSPBackwardFunction(distmx[i, j], costmx[i, j, :]) for (i, j) in zip(If, Jf)]
+        FB = sparse(If, Jf, fb)
+
+        CSPInstance(;
+            graph,
+            origin_vertex=s,
+            destination_vertex=t,
+            origin_forward_resource=resource,
+            destination_backward_resource=resource,
+            cost_function=RSP_cost,
+            forward_functions=FF,
+            backward_functions=FB,
+        )
+    else
+        CSPInstance(;
+            graph,
+            origin_vertex=s,
+            destination_vertex=t,
+            origin_forward_resource=resource,
+            cost_function=RSP_partial_cost,
+            forward_functions=FF,
+        )
+    end
     return generalized_constrained_shortest_path(instance; W=max_costs)
 end
