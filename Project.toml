@@ -1,7 +1,7 @@
 name = "ConstrainedShortestPaths"
 uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
 authors = ["Léo Baty and contributors"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
