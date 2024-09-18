@@ -101,12 +101,19 @@ function stochastic_PLNE(g, slacks, delays, initial_paths; bounding=true)
     new_paths = Vector{Int}[]
     cons = []
 
+    # c = 0
     while true
+        # c += 1
         optimize!(model)
         λ_val = value.(λ)
         (; c_star, p_star) = stochastic_routing_shortest_path(
             g, slacks, delays, λ_val; bounding
         )
+        # if c == 2
+        #     jldsave("debug2.jld2"; graph, slacks, delays, λ_val, c_star, p_star)
+        # end
+        # @info λ_val
+        # @info (; c_star, p_star)
         full_cost =
             c_star + vehicle_cost + sum(λ_val[v] for v in job_indices if v in p_star)
         @assert path_cost(p_star, slacks, delays) + vehicle_cost ≈ full_cost

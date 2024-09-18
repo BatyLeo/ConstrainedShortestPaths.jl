@@ -1,6 +1,7 @@
 using ConstrainedShortestPaths
 using Graphs
 using SparseArrays
+using JLD2
 
 @testset "Path digraph" begin
     m = 5  # number of scenarios
@@ -132,9 +133,9 @@ end
 @testset "Random graphs" begin
     n = 5
     for nb_scenarios in 1:5
-        for nb_vertices in 10:15
-            for i in 1:n
-                rng = StableRNG(i)
+        for nb_vertices in 10:1:15
+            for seed in 1:n
+                rng = StableRNG(seed)
                 graph = random_acyclic_digraph(
                     nb_vertices, rng; all_connected_to_source_and_destination=true
                 )
@@ -163,6 +164,9 @@ end
                     graph, slack_matrix, delays, initial_paths; bounding=false
                 )
                 @test obj2 ≈ _obj2
+                # if !(obj2 ≈ _obj2)
+                #     jldsave("debug.jld2"; graph, slack_matrix, delays, initial_paths)
+                # end
 
                 # Exact resolution
                 obj, sol = solve_scenarios(graph, slack_matrix, delays)
