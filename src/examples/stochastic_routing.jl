@@ -54,19 +54,19 @@ function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     return StochasticForwardResource(new_c, new_xi, new_λ), true
 end
 
-function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::Float64)
+function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::Float64, λᵥ)
     f = if slack == Inf
         piecewise_linear()
     else
         piecewise_linear(1.0, slack, delay)
     end
-    return f + g ∘ f
+    return f + g ∘ f - λᵥ
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
     return StochasticBackwardResource(
         [
-            _backward_scenario(g, delay, slack) for
+            _backward_scenario(g, delay, slack, f.λ_value) for
             (g, delay, slack) in zip(q.g, f.delays, f.slacks)
         ],
         f.λ_value + q.λ,
@@ -74,7 +74,7 @@ function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
 end
 
 function stochastic_cost(fr::StochasticForwardResource, br::StochasticBackwardResource)
-    λ_sum = fr.λ + br.λ
+    λ_sum = fr.λ
     cp = fr.c + mean(gj(Rj) for (gj, Rj) in zip(br.g, fr.xi))
     return cp - λ_sum
 end

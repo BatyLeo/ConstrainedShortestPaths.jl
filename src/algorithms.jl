@@ -48,6 +48,9 @@ function generalized_a_star(instance::CSPInstance, bounds; kwargs...)
     c_star = Inf
     p_star = [origin_vertex]
 
+    nb_cuts_with_bounds = 0
+    nb_cuts_with_dominance = 0
+
     while !isempty(L)
         p = dequeue!(L)
         v = p[end]
@@ -64,6 +67,7 @@ function generalized_a_star(instance::CSPInstance, bounds; kwargs...)
             end
             forward_resources[q] = rq
             c = instance.cost_function(rq, bounds[w])
+
             if c < c_star # cut using bounds
                 if w == destination_vertex # if destination is reached
                     c_star = c
@@ -72,11 +76,16 @@ function generalized_a_star(instance::CSPInstance, bounds; kwargs...)
                     remove_dominated!(M[w], rq)
                     push!(M[w], rq)
                     enqueue!(L, q => c)
+                else
+                    nb_cuts_with_dominance += 1
                 end
+            else
+                nb_cuts_with_bounds += 1
             end
         end
     end
-    return (; p_star, c_star)
+    info = (; nb_cuts_with_bounds, nb_cuts_with_dominance)
+    return (; p_star, c_star, info, bounds)
 end
 
 """
@@ -100,6 +109,7 @@ function generalized_a_star(instance::ForwardCSPInstance; kwargs...)
     push!(M[origin_vertex], forward_resources[empty_path])
     c_star = Inf
     p_star = [origin_vertex]
+    nb_cuts_with_dominance = 0
 
     while !isempty(L)
         p = dequeue!(L)
@@ -126,10 +136,13 @@ function generalized_a_star(instance::ForwardCSPInstance; kwargs...)
                 remove_dominated!(M[w], rq)
                 push!(M[w], rq)
                 enqueue!(L, q => c)
+            else
+                nb_cuts_with_dominance += 1
             end
         end
     end
-    return (; p_star, c_star)
+    info = (; nb_cuts_with_dominance)
+    return (; p_star, c_star, info)
 end
 
 """
