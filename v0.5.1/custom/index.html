@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Implement a custom problem · ConstrainedShortestPaths.jl</title><meta name="title" content="Implement a custom problem · ConstrainedShortestPaths.jl"/><meta property="og:title" content="Implement a custom problem · ConstrainedShortestPaths.jl"/><meta property="twitter:title" content="Implement a custom problem · ConstrainedShortestPaths.jl"/><meta name="description" content="Documentation for ConstrainedShortestPaths.jl."/><meta property="og:description" content="Documentation for ConstrainedShortestPaths.jl."/><meta property="twitter:description" content="Documentation for ConstrainedShortestPaths.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">ConstrainedShortestPaths.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../maths/">Mathematical background</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../basic_shortest_path/">Usual shortest path</a></li><li><a class="tocitem" href="../resource_shortest_path/">Shortest path with linear resource constraints</a></li><li><a class="tocitem" href="../stochastic_vsp/">Stochastic Vehicle Scheduling</a></li><li class="is-active"><a class="tocitem" href>Implement a custom problem</a><ul class="internal"><li><a class="tocitem" href="#Example-on-the-unidimensional-resource-shortest-path"><span>Example on the unidimensional resource shortest path</span></a></li><li><a class="tocitem" href="#Resources"><span>Resources</span></a></li><li><a class="tocitem" href="#Expansion-functions"><span>Expansion functions</span></a></li><li><a class="tocitem" href="#Cost-function"><span>Cost function</span></a></li><li><a class="tocitem" href="#Test-on-an-instance"><span>Test on an instance</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../api/">API reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorial</a></li><li class="is-active"><a href>Implement a custom problem</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Implement a custom problem</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/BatyLeo/ConstrainedShortestPaths.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/BatyLeo/ConstrainedShortestPaths.jl/blob/main/docs/src/literate/custom.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Implement-a-custom-problem"><a class="docs-heading-anchor" href="#Implement-a-custom-problem">Implement a custom problem</a><a id="Implement-a-custom-problem-1"></a><a class="docs-heading-anchor-permalink" href="#Implement-a-custom-problem" title="Permalink"></a></h1><p>In this tutorial, you will learn how to use this package to solve your own custom constrained shortest path problem.</p><p>First of all, make sure you read the <a href="../maths/#Mathematical-background">Mathematical background</a>. In order to use the <a href="../api/#ConstrainedShortestPaths.generalized_constrained_shortest_path-Tuple{CSPInstance}"><code>generalized_constrained_shortest_path</code></a> on your custom problem, you need to define a few different types and methods:</p><ul><li>Types that need to be implemented:<ul><li>Resources types (backward and forward)</li><li>Expansion functions (backward and forward)</li></ul></li><li>Methods that need to be implemented:<ul><li><code>Base.&lt;=</code> between two forward resources</li><li><code>Base.minimum</code> of a vector of backward resources</li><li>Make forward functions callable on forward resources</li><li>Make backward function callable on backward resources</li><li>A callable cost function</li></ul></li></ul><p>You can checkout examples already implemented in the <a href="https://github.com/BatyLeo/ConstrainedShortestPaths.jl/tree/main/src/examples"><code>src/examples</code></a> folder of this package.</p><h2 id="Example-on-the-unidimensional-resource-shortest-path"><a class="docs-heading-anchor" href="#Example-on-the-unidimensional-resource-shortest-path">Example on the unidimensional resource shortest path</a><a id="Example-on-the-unidimensional-resource-shortest-path-1"></a><a class="docs-heading-anchor-permalink" href="#Example-on-the-unidimensional-resource-shortest-path" title="Permalink"></a></h2><p>We illustrate this on the same problem a in <a href="../resource_shortest_path/#Shortest-path-with-linear-resource-constraints">Shortest path with linear resource constraints</a> but simplified with only one constraint.</p><pre><code class="language-julia hljs">using ConstrainedShortestPaths
+using Graphs, SparseArrays</code></pre><h2 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h2><p>Forward and backward resources for this example are in the same space:</p><pre><code class="language-julia hljs">struct Resource
+    c::Float64
+    w::Float64
+end</code></pre><p><code>Base.&lt;=</code> and <code>Base.minimum</code></p><pre><code class="language-julia hljs">function Base.:&lt;=(r1::Resource, r2::Resource)
+    return r1.c &lt;= r2.c &amp;&amp; r1.w &lt;= r2.w
+end
+
+function Base.min(r₁::Resource, r₂::Resource)
+    new_c = min(r₁.c, r₂.c)
+    new_w = min(r₁.w, r₂.w)
+    return Resource(new_c, new_w)
+end</code></pre><h2 id="Expansion-functions"><a class="docs-heading-anchor" href="#Expansion-functions">Expansion functions</a><a id="Expansion-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Expansion-functions" title="Permalink"></a></h2><pre><code class="language-julia hljs">struct ForwardExpansionFunction
+    c::Float64
+    w::Float64
+end
+
+function (f::ForwardExpansionFunction)(q::Resource; W)
+    return Resource(f.c + q.c, f.w + q.w), f.w + q.w &lt;= W
+end
+
+struct BackwardExpansionFunction
+    c::Float64
+    w::Float64
+end
+
+function (f::BackwardExpansionFunction)(q::Resource; W)
+    return Resource(f.c + q.c, f.w + q.w)
+end</code></pre><h2 id="Cost-function"><a class="docs-heading-anchor" href="#Cost-function">Cost function</a><a id="Cost-function-1"></a><a class="docs-heading-anchor-permalink" href="#Cost-function" title="Permalink"></a></h2><pre><code class="language-julia hljs">struct Cost end
+
+function (cost::Cost)(fr::Resource, br::Resource)
+    return fr.c + br.c
+end</code></pre><h2 id="Test-on-an-instance"><a class="docs-heading-anchor" href="#Test-on-an-instance">Test on an instance</a><a id="Test-on-an-instance-1"></a><a class="docs-heading-anchor-permalink" href="#Test-on-an-instance" title="Permalink"></a></h2><pre><code class="language-julia hljs">nb_vertices = 4
+graph = SimpleDiGraph(nb_vertices)
+edge_list = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]
+distance_list = [1, 2, -1, 1, 1]
+for (i, j) in edge_list
+    add_edge!(graph, i, j)
+end
+I = [src(e) for e in edges(graph)]
+J = [dst(e) for e in edges(graph)]
+d = sparse(I, J, distance_list)
+
+W = 1.0
+
+cost_list = [[0.0], [0.0], [10.0], [0.0], [0]]
+w = [0.0 for i in 1:nb_vertices, j in 1:nb_vertices, k in 1:1]
+for ((i, j), k) in zip(edge_list, cost_list)
+    w[i, j, :] = k
+end
+
+# origin forward resource and backward forward resource set to 0
+resource = Resource(0.0, 0.0)
+
+# forward and backward expansion functions are equal
+If = [src(e) for e in edges(graph)]
+Jf = [dst(e) for e in edges(graph)]
+ff = [ForwardExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
+fb = [BackwardExpansionFunction(d[i, j], w[i, j]) for (i, j) in zip(If, Jf)]
+FF = sparse(If, Jf, ff);
+FB = sparse(If, Jf, fb);
+
+instance = CSPInstance(;
+    graph,
+    origin_vertex=1,
+    destination_vertex=nb_vertices,
+    origin_forward_resource=resource,
+    destination_backward_resource=resource,
+    cost_function=Cost(),
+    forward_functions=FF,
+    backward_functions=FB,
+)
+(; p_star, c_star) = generalized_constrained_shortest_path(instance; W=W)
+@info &quot;Result&quot; c_star p_star</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">┌ Info: </span></span>Result
+<span class="sgr36"><span class="sgr1">│ </span></span>  c_star = 2.0
+<span class="sgr36"><span class="sgr1">│ </span></span>  p_star =
+<span class="sgr36"><span class="sgr1">│ </span></span>   3-element Vector{Int64}:
+<span class="sgr36"><span class="sgr1">│ </span></span>    1
+<span class="sgr36"><span class="sgr1">│ </span></span>    2
+<span class="sgr36"><span class="sgr1">└ </span></span>    4</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../stochastic_vsp/">« Stochastic Vehicle Scheduling</a><a class="docs-footer-nextpage" href="../api/">API reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Monday 21 October 2024 13:43">Monday 21 October 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
