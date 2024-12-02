@@ -7,3 +7,4 @@ scripts
 .vscode
 debug.jl
 *.jld2
+.DS_Store

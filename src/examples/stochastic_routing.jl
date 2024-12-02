@@ -2,34 +2,66 @@ function piecewise_linear(final_slope::Float64=0.0, slack::Float64=0.0, delay::F
     return PiecewiseLinearFunction([slack], [delay], 0.0, final_slope)
 end
 
+"""
+$TYPEDEF
+
+# Fields
+$TYPEDFIELDS
+"""
 struct StochasticForwardResource
-    c::Float64
-    xi::Vector{Float64}
-    λ::Float64  # sum
+    "partial cost of the associated path (path cost minus dual varibles)"
+    path_cost::Float64
+    "propagated delay for each scenario"
+    propagated_delays::Vector{Float64}
 end
 
+"""
+$TYPEDEF
+
+# Fields
+$TYPEDFIELDS
+"""
 struct StochasticBackwardResource
+    "piecewise linear function for each scenario, take as input propagated delay and outputs total delay of partail path"
     g::Vector{PiecewiseLinearFunction{Float64}}
-    λ::Float64
 end
+
+"""
+$TYPEDEF
+
+# Fields
+$TYPEDFIELDS
+"""
 struct StochasticForwardFunction
+    "arc slack for each scenario"
     slacks::Vector{Float64}
-    delays::Vector{Float64}
+    "intrinsic delay for each scenario of arc head"
+    intrinsic_delays::Vector{Float64}
+    "dual variable of arc head"
     λ_value::Float64
 end
 
+"""
+$TYPEDEF
+
+# Fields
+$TYPEDFIELDS
+"""
 struct StochasticBackwardFunction
+    "arc slack for each scenario"
     slacks::Vector{Float64}
-    delays::Vector{Float64}
+    "intrinsic delay for each scenario of arc head"
+    intrinsic_delays::Vector{Float64}
+    "dual variable of arc head"
     λ_value::Float64
 end
 
 function Base.:<=(r1::StochasticForwardResource, r2::StochasticForwardResource)
-    if r1.c - r1.λ > r2.c - r2.λ
+    if r1.path_cost > r2.path_cost
         return false
     end
 
-    for (x1, x2) in zip(r1.xi, r2.xi)
+    for (x1, x2) in zip(r1.propagated_delays, r2.propagated_delays)
         if x1 > x2
             return false
         end
@@ -40,18 +72,17 @@ end
 
 function Base.min(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
     new_g = min.(r1.g, r2.g)
-    new_λ = max(r1.λ, r2.λ)
-    return StochasticBackwardResource(new_g, new_λ)
+    return StochasticBackwardResource(new_g)
 end
 
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     new_xi = [
         local_delay + max(propagated_delay - slack, 0) for
-        (propagated_delay, local_delay, slack) in zip(q.xi, f.delays, f.slacks)
+        (propagated_delay, local_delay, slack) in
+        zip(q.propagated_delays, f.intrinsic_delays, f.slacks)
     ]
-    new_c = q.c + mean(new_xi)
-    new_λ = q.λ + f.λ_value
-    return StochasticForwardResource(new_c, new_xi, new_λ), true
+    new_c = q.path_cost + mean(new_xi) - f.λ_value
+    return StochasticForwardResource(new_c, new_xi), true
 end
 
 function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::Float64, λᵥ)
@@ -64,23 +95,19 @@ function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::F
 end
 
 function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
-    return StochasticBackwardResource(
-        [
-            _backward_scenario(g, delay, slack, f.λ_value) for
-            (g, delay, slack) in zip(q.g, f.delays, f.slacks)
-        ],
-        f.λ_value + q.λ,
-    )
+    return StochasticBackwardResource([
+        _backward_scenario(g, delay, slack, f.λ_value) for
+        (g, delay, slack) in zip(q.g, f.intrinsic_delays, f.slacks)
+    ])
 end
 
 function stochastic_cost(fr::StochasticForwardResource, br::StochasticBackwardResource)
-    λ_sum = fr.λ
-    cp = fr.c + mean(gj(Rj) for (gj, Rj) in zip(br.g, fr.xi))
-    return cp - λ_sum
+    cp = fr.path_cost + mean(gj(Rj) for (gj, Rj) in zip(br.g, fr.propagated_delays))
+    return cp
 end
 
 function partial_stochastic_cost(fr::StochasticForwardResource)
-    return fr.c - fr.λ
+    return fr.path_cost
 end
 
 ## General wrapper
@@ -111,10 +138,10 @@ function stochastic_routing_shortest_path(
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     nb_scenarios = size(delays, 2)
 
-    origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
-    destination_backward_resource = StochasticBackwardResource(
-        [piecewise_linear() for _ in 1:nb_scenarios], 0
-    )
+    origin_forward_resource = StochasticForwardResource(0.0, delays[1, :])
+    destination_backward_resource = StochasticBackwardResource([
+        piecewise_linear() for _ in 1:nb_scenarios
+    ])
 
     I = [src(e) for e in edges(graph)]
     J = [dst(e) for e in edges(graph)]
@@ -169,10 +196,10 @@ function stochastic_routing_shortest_path_with_threshold(
 )
     nb_scenarios = size(delays, 2)
 
-    origin_forward_resource = StochasticForwardResource(0.0, delays[1, :], 0)
-    destination_backward_resource = StochasticBackwardResource(
-        [piecewise_linear() for _ in 1:nb_scenarios], 0
-    )
+    origin_forward_resource = StochasticForwardResource(0.0, delays[1, :])
+    destination_backward_resource = StochasticBackwardResource([
+        piecewise_linear() for _ in 1:nb_scenarios
+    ])
 
     I = [src(e) for e in edges(graph)]
     J = [dst(e) for e in edges(graph)]
