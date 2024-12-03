@@ -67,14 +67,14 @@ function resource_PLNE(g, d, c, C)
     return objective_value(model), p
 end
 
-function path_cost(path, slacks, delays)
+function path_cost(path, slacks, delays, λ=zeros(size(delays, 1)))
     nb_scenarios = size(delays, 2)
     old_v = path[1]
     R = delays[old_v, :]
     C = 0.0
     for v in path[2:(end - 1)]
         @. R = max(R - slacks[old_v, v], 0) + delays[v, :]
-        C += sum(R) / nb_scenarios
+        C += sum(R) / nb_scenarios - λ[v]
         old_v = v
     end
     return C + vehicle_cost
