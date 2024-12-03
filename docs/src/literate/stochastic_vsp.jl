@@ -110,6 +110,7 @@ I = [src(e) for e in edges(graph)]
 J = [dst(e) for e in edges(graph)]
 
 delays = rand(nb_vertices, nb_scenarios) * 10
+delays[1, :] .= 0.0
 delays[end, :] .= 0.0
 slacks = [
     if dst(e) == nb_vertices
