@@ -124,6 +124,12 @@ end
         @test c_star == 5
         @test p_star == [1, 3, 4, 5]
         @test path_cost(p_star, slack_matrix, delays) == c_star
+        (; c_star, p_star) = stochastic_routing_shortest_path(
+            graph, slack_matrix, delays; use_convex_resources=true
+        )
+        @test c_star == 5
+        @test p_star == [1, 3, 4, 5]
+        @test path_cost(p_star, slack_matrix, delays) == c_star
     end
 
     # @testset "Detour with slack" begin
@@ -140,7 +146,7 @@ end
 @testset "Random graphs" begin
     n = 5
     for nb_scenarios in 1:5
-        for nb_vertices in 10:1:15
+        for nb_vertices in 10:1:20
             for seed in 1:n
                 rng = StableRNG(seed)
                 graph = random_acyclic_digraph(

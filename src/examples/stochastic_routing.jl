@@ -21,7 +21,7 @@ $TYPEDEF
 # Fields
 $TYPEDFIELDS
 """
-struct StochasticBackwardResource
+struct StochasticBackwardResource{is_convex}
     "piecewise linear function for each scenario, take as input propagated delay and outputs total delay of partail path"
     g::Vector{PiecewiseLinearFunction{Float64}}
 end
@@ -70,9 +70,19 @@ function Base.:<=(r1::StochasticForwardResource, r2::StochasticForwardResource)
     return true
 end
 
-function Base.min(r1::StochasticBackwardResource, r2::StochasticBackwardResource)
+function Base.min(
+    r1::StochasticBackwardResource{true}, r2::StochasticBackwardResource{true}
+)
+    new_g = convex_meet.(r1.g, r2.g)
+    # new_g = remove_redundant_breakpoints.(convex_meet.(r1.g, r2.g); atol=1e-8)
+    return StochasticBackwardResource{true}(new_g)
+end
+
+function Base.min(
+    r1::StochasticBackwardResource{false}, r2::StochasticBackwardResource{false}
+)
     new_g = min.(r1.g, r2.g)
-    return StochasticBackwardResource(new_g)
+    return StochasticBackwardResource{false}(new_g)
 end
 
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)
@@ -90,8 +100,10 @@ function _backward_scenario(g::PiecewiseLinearFunction, delay::Float64, slack::F
     return f + g ∘ f - λᵥ
 end
 
-function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
-    return StochasticBackwardResource([
+function (f::StochasticBackwardFunction)(
+    q::StochasticBackwardResource{is_convex}
+) where {is_convex}
+    return StochasticBackwardResource{is_convex}([
         _backward_scenario(g, delay, slack, f.λ_value) for
         (g, delay, slack) in zip(q.g, f.intrinsic_delays, f.slacks)
     ])
@@ -116,6 +128,7 @@ function create_instance(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
     bounding=true,
+    use_convex_resources=false,
 ) where {T}
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     @assert all(intrinsic_delays[origin_vertex] .== 0.0)
@@ -139,7 +152,7 @@ function create_instance(
             StochasticBackwardFunction(slacks[u, v], intrinsic_delays[v, :], λ_values[v])
             for (u, v) in zip(I, J)
         ]
-        destination_backward_resource = StochasticBackwardResource([
+        destination_backward_resource = StochasticBackwardResource{use_convex_resources}([
             piecewise_linear() for _ in 1:nb_scenarios
         ])
 
@@ -189,6 +202,7 @@ function stochastic_routing_shortest_path(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
     bounding=true,
+    use_convex_resources=false,
 ) where {T}
     instance = create_instance(
         graph,
@@ -198,6 +212,7 @@ function stochastic_routing_shortest_path(
         origin_vertex=origin_vertex,
         destination_vertex=destination_vertex,
         bounding=bounding,
+        use_convex_resources=use_convex_resources,
     )
     return generalized_constrained_shortest_path(instance)
 end
@@ -215,6 +230,7 @@ function stochastic_routing_shortest_path_with_threshold(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
     bounding=true,
+    use_convex_resources=false,
     threshold,
 ) where {T}
     instance = create_instance(
@@ -225,6 +241,7 @@ function stochastic_routing_shortest_path_with_threshold(
         bounding=bounding,
         origin_vertex=origin_vertex,
         destination_vertex=destination_vertex,
+        use_convex_resources=use_convex_resources,
     )
     return generalized_constrained_shortest_path_with_threshold(instance, threshold)
 end

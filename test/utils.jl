@@ -80,7 +80,9 @@ function path_cost(path, slacks, delays, λ=zeros(size(delays, 1)))
     return C + vehicle_cost
 end
 
-function stochastic_PLNE(g, slacks, delays, initial_paths; bounding=true)
+function stochastic_PLNE(
+    g, slacks, delays, initial_paths; bounding=true, use_convex_resources=true
+)
     nb_nodes = nv(g)
     job_indices = 2:(nb_nodes - 1)
 
@@ -107,7 +109,7 @@ function stochastic_PLNE(g, slacks, delays, initial_paths; bounding=true)
         optimize!(model)
         λ_val = value.(λ)
         (; c_star, p_star) = stochastic_routing_shortest_path(
-            g, slacks, delays, λ_val; bounding
+            g, slacks, delays, λ_val; bounding, use_convex_resources
         )
         # if c == 2
         #     jldsave("debug2.jld2"; graph, slacks, delays, λ_val, c_star, p_star)
