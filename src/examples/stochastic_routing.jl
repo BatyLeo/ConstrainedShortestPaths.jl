@@ -9,10 +9,10 @@ $TYPEDEF
 $TYPEDFIELDS
 """
 struct StochasticForwardResource
-    "partial cost of the associated path (path cost minus dual varibles)"
+    "partial cost of the associated path (not counting task at end of path)"
     path_cost::Float64
-    "propagated delay for each scenario"
-    propagated_delays::Vector{Float64}
+    "current task (end of path) delay for each scenario"
+    delays::Vector{Float64}
 end
 
 """
@@ -37,7 +37,7 @@ struct StochasticForwardFunction
     slacks::Vector{Float64}
     "intrinsic delay for each scenario of arc head"
     intrinsic_delays::Vector{Float64}
-    "dual variable of arc head"
+    "dual variable of arc tail"
     λ_value::Float64
 end
 
@@ -61,7 +61,7 @@ function Base.:<=(r1::StochasticForwardResource, r2::StochasticForwardResource)
         return false
     end
 
-    for (x1, x2) in zip(r1.propagated_delays, r2.propagated_delays)
+    for (x1, x2) in zip(r1.delays, r2.delays)
         if x1 > x2
             return false
         end
@@ -76,16 +76,8 @@ function Base.min(r1::StochasticBackwardResource, r2::StochasticBackwardResource
 end
 
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)
-    # Total delay at the tail of the arc
-    # delays = f.intrinsic_delays + q.propagated_delays
-    new_xi = [
-        local_delay + max(propagated_delay - slack, 0) for
-        (propagated_delay, local_delay, slack) in
-        zip(q.propagated_delays, f.intrinsic_delays, f.slacks)
-    ]
-    # new_propagated_delay = max.(delays .- f.slacks, 0)
-    # new_c = q.path_cost + mean(delays) - f.λ_value
-    new_c = q.path_cost + mean(new_xi) - f.λ_value
+    new_xi = f.intrinsic_delays .+ max.(q.delays .- f.slacks, 0)
+    new_c = q.path_cost + mean(q.delays) - f.λ_value
     return StochasticForwardResource(new_c, new_xi), true
 end
 
@@ -106,7 +98,7 @@ function (f::StochasticBackwardFunction)(q::StochasticBackwardResource)
 end
 
 function stochastic_cost(fr::StochasticForwardResource, br::StochasticBackwardResource)
-    cp = fr.path_cost + mean(gj(Rj) for (gj, Rj) in zip(br.g, fr.propagated_delays))
+    cp = fr.path_cost + mean(gj(Rj) for (gj, Rj) in zip(br.g, fr.delays))
     return cp
 end
 
@@ -115,6 +107,65 @@ function partial_stochastic_cost(fr::StochasticForwardResource)
 end
 
 ## General wrapper
+
+function create_instance(
+    graph::AbstractGraph{T},
+    slacks::AbstractMatrix,
+    intrinsic_delays::AbstractMatrix,
+    λ_values::AbstractVector=zeros(nv(graph));
+    origin_vertex::T=one(T),
+    destination_vertex::T=nv(graph),
+    bounding=true,
+) where {T}
+    @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
+    @assert all(intrinsic_delays[origin_vertex] .== 0.0)
+    @assert all(intrinsic_delays[destination_vertex] .== 0.0)
+
+    nb_scenarios = size(intrinsic_delays, 2)
+
+    origin_forward_resource = StochasticForwardResource(0.0, zeros(nb_scenarios))
+
+    I = [src(e) for e in edges(graph)]
+    J = [dst(e) for e in edges(graph)]
+
+    ff = [
+        StochasticForwardFunction(slacks[u, v], intrinsic_delays[v, :], λ_values[v]) for
+        (u, v) in zip(I, J)
+    ]
+    FF = sparse(I, J, ff)
+
+    if bounding
+        bb = [
+            StochasticBackwardFunction(slacks[u, v], intrinsic_delays[v, :], λ_values[v])
+            for (u, v) in zip(I, J)
+        ]
+        destination_backward_resource = StochasticBackwardResource([
+            piecewise_linear() for _ in 1:nb_scenarios
+        ])
+
+        BB = sparse(I, J, bb)
+
+        return CSPInstance(;
+            graph,
+            origin_vertex,
+            destination_vertex,
+            origin_forward_resource,
+            destination_backward_resource,
+            cost_function=stochastic_cost,
+            forward_functions=FF,
+            backward_functions=BB,
+        )
+    else
+        return CSPInstance(;
+            graph,
+            origin_vertex,
+            destination_vertex,
+            origin_forward_resource,
+            cost_function=partial_stochastic_cost,
+            forward_functions=FF,
+        )
+    end
+end
 
 """
 $TYPEDSIGNATURES
@@ -139,97 +190,41 @@ function stochastic_routing_shortest_path(
     destination_vertex::T=nv(graph),
     bounding=true,
 ) where {T}
-    @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
-    @assert all(intrinsic_delays[origin_vertex] .== 0.0)
-    @assert all(intrinsic_delays[destination_vertex] .== 0.0)
-
-    nb_scenarios = size(intrinsic_delays, 2)
-
-    origin_forward_resource = StochasticForwardResource(0.0, zeros(nb_scenarios))
-    destination_backward_resource = StochasticBackwardResource([
-        piecewise_linear() for _ in 1:nb_scenarios
-    ])
-
-    I = [src(e) for e in edges(graph)]
-    J = [dst(e) for e in edges(graph)]
-    ff = [
-        StochasticForwardFunction(slacks[u, v], intrinsic_delays[v, :], λ_values[v]) for
-        (u, v) in zip(I, J)
-    ]
-    FF = sparse(I, J, ff)
-
-    instance = if bounding
-        bb = [
-            StochasticBackwardFunction(slacks[u, v], intrinsic_delays[v, :], λ_values[v]) for (u, v) in zip(I, J)
-        ]
-
-        BB = sparse(I, J, bb)
-
-        CSPInstance(;
-            graph,
-            origin_vertex,
-            destination_vertex,
-            origin_forward_resource,
-            destination_backward_resource,
-            cost_function=stochastic_cost,
-            forward_functions=FF,
-            backward_functions=BB,
-        )
-    else
-        CSPInstance(;
-            graph,
-            origin_vertex,
-            destination_vertex,
-            origin_forward_resource,
-            cost_function=partial_stochastic_cost,
-            forward_functions=FF,
-        )
-    end
+    instance = create_instance(
+        graph,
+        slacks,
+        intrinsic_delays,
+        λ_values;
+        origin_vertex=origin_vertex,
+        destination_vertex=destination_vertex,
+        bounding=bounding,
+    )
     return generalized_constrained_shortest_path(instance)
 end
 
 """
 $TYPEDSIGNATURES
 
-Compute stochastic routing shortest path between first and last vertices of graph `graph`.
+Threshold version of [`stochastic_routing_shortest_path`](@ref).
 """
 function stochastic_routing_shortest_path_with_threshold(
-    graph::AbstractGraph,
+    graph::AbstractGraph{T},
     slacks::AbstractMatrix,
     delays::AbstractMatrix,
     λ_values::AbstractVector=zeros(nv(graph));
+    origin_vertex::T=one(T),
+    destination_vertex::T=nv(graph),
+    bounding=true,
     threshold,
-)
-    nb_scenarios = size(delays, 2)
-
-    origin_forward_resource = StochasticForwardResource(0.0, delays[1, :])
-    destination_backward_resource = StochasticBackwardResource([
-        piecewise_linear() for _ in 1:nb_scenarios
-    ])
-
-    I = [src(e) for e in edges(graph)]
-    J = [dst(e) for e in edges(graph)]
-    ff = [
-        StochasticForwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
-        (u, v) in zip(I, J)
-    ]
-    bb = [
-        StochasticBackwardFunction(slacks[u, v], delays[v, :], λ_values[v]) for
-        (u, v) in zip(I, J)
-    ]
-
-    FF = sparse(I, J, ff)
-    BB = sparse(I, J, bb)
-
-    instance = CSPInstance(;
+) where {T}
+    instance = create_instance(
         graph,
-        origin_vertex=1,
-        destination_vertex=nv(graph),
-        origin_forward_resource,
-        destination_backward_resource,
-        cost_function=stochastic_cost,
-        forward_functions=FF,
-        backward_functions=BB,
+        slacks,
+        delays,
+        λ_values;
+        bounding=bounding,
+        origin_vertex=origin_vertex,
+        destination_vertex=destination_vertex,
     )
     return generalized_constrained_shortest_path_with_threshold(instance, threshold)
 end
