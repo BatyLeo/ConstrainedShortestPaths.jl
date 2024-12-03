@@ -77,14 +77,15 @@ end
 
 function (f::StochasticForwardFunction)(q::StochasticForwardResource)
     # Total delay at the tail of the arc
-    delays = f.intrinsic_delays + q.propagated_delays
-    # new_xi = [
-    #     local_delay + max(propagated_delay - slack, 0) for
-    #     (propagated_delay, local_delay, slack) in
-    #     zip(q.propagated_delays, f.intrinsic_delays, f.slacks)
-    # ]
-    new_propagated_delay = max.(delays .- f.slacks, 0)
-    new_c = q.path_cost + mean(delays) - f.λ_value
+    # delays = f.intrinsic_delays + q.propagated_delays
+    new_xi = [
+        local_delay + max(propagated_delay - slack, 0) for
+        (propagated_delay, local_delay, slack) in
+        zip(q.propagated_delays, f.intrinsic_delays, f.slacks)
+    ]
+    # new_propagated_delay = max.(delays .- f.slacks, 0)
+    # new_c = q.path_cost + mean(delays) - f.λ_value
+    new_c = q.path_cost + mean(new_xi) - f.λ_value
     return StochasticForwardResource(new_c, new_xi), true
 end
 
@@ -139,12 +140,12 @@ function stochastic_routing_shortest_path(
     bounding=true,
 ) where {T}
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
+    @assert all(intrinsic_delays[origin_vertex] .== 0.0)
+    @assert all(intrinsic_delays[destination_vertex] .== 0.0)
+
     nb_scenarios = size(intrinsic_delays, 2)
 
     origin_forward_resource = StochasticForwardResource(0.0, zeros(nb_scenarios))
-    # origin_forward_resource = StochasticForwardResource(
-    #     0.0, intrinsic_delays[origin_vertex, :]
-    # )
     destination_backward_resource = StochasticBackwardResource([
         piecewise_linear() for _ in 1:nb_scenarios
     ])
@@ -152,7 +153,7 @@ function stochastic_routing_shortest_path(
     I = [src(e) for e in edges(graph)]
     J = [dst(e) for e in edges(graph)]
     ff = [
-        StochasticForwardFunction(slacks[u, v], intrinsic_delays[u, :], λ_values[v]) for
+        StochasticForwardFunction(slacks[u, v], intrinsic_delays[v, :], λ_values[v]) for
         (u, v) in zip(I, J)
     ]
     FF = sparse(I, J, ff)
