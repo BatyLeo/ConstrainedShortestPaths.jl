@@ -13,7 +13,8 @@ using Graphs:
     edges,
     outneighbors,
     induced_subgraph
-using PiecewiseLinearFunctions: PiecewiseLinearFunction
+using PiecewiseLinearFunctions:
+    PiecewiseLinearFunction, convex_meet, remove_redundant_breakpoints
 using SparseArrays: sparse
 using Statistics: mean
 

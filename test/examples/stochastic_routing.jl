@@ -124,6 +124,12 @@ end
         @test c_star == 5
         @test p_star == [1, 3, 4, 5]
         @test path_cost(p_star, slack_matrix, delays) == c_star
+        (; c_star, p_star) = stochastic_routing_shortest_path(
+            graph, slack_matrix, delays; use_convex_resources=true
+        )
+        @test c_star == 5
+        @test p_star == [1, 3, 4, 5]
+        @test path_cost(p_star, slack_matrix, delays) == c_star
     end
 
     # @testset "Detour with slack" begin
@@ -140,7 +146,7 @@ end
 @testset "Random graphs" begin
     n = 5
     for nb_scenarios in 1:5
-        for nb_vertices in 10:1:15
+        for nb_vertices in 10:1:20
             for seed in 1:n
                 rng = StableRNG(seed)
                 graph = random_acyclic_digraph(
@@ -169,12 +175,9 @@ end
                     graph, slack_matrix, delays, initial_paths
                 )
                 _value, _obj2, _paths, _dual, _dual_new = stochastic_PLNE(
-                    graph, slack_matrix, delays, initial_paths; bounding=false
+                    graph, slack_matrix, delays, initial_paths; bounding=true
                 )
                 @test obj2 ≈ _obj2
-                # if !(obj2 ≈ _obj2)
-                #     jldsave("debug.jld2"; graph, slack_matrix, delays, initial_paths)
-                # end
 
                 # Exact resolution
                 obj, sol = solve_scenarios(graph, slack_matrix, delays)
@@ -198,6 +201,10 @@ end
                     additional_paths, costs = stochastic_routing_shortest_path_with_threshold(
                         graph, slack_matrix, delays, λ_val; threshold
                     )
+                    _additional_paths, _costs = stochastic_routing_shortest_path_with_threshold(
+                        graph, slack_matrix, delays, λ_val; threshold, bounding=true
+                    )
+                    @test costs ≈ _costs
                     full_paths = unique(vcat(initial_paths, paths, additional_paths))
                     obj4, y4 = column_generation(graph, slack_matrix, delays, full_paths)
                     @test obj4 ≈ cupp || obj4 < cupp
