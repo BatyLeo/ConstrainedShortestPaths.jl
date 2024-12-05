@@ -128,7 +128,7 @@ function create_instance(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
     bounding=true,
-    use_convex_resources=false,
+    use_convex_resources=true,
 ) where {T}
     @assert λ_values[origin_vertex] == 0.0 && λ_values[destination_vertex] == 0.0
     @assert all(intrinsic_delays[origin_vertex] .== 0.0)
@@ -202,7 +202,7 @@ function stochastic_routing_shortest_path(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
     bounding=true,
-    use_convex_resources=false,
+    use_convex_resources=true,
 ) where {T}
     instance = create_instance(
         graph,
@@ -230,7 +230,7 @@ function stochastic_routing_shortest_path_with_threshold(
     origin_vertex::T=one(T),
     destination_vertex::T=nv(graph),
     bounding=true,
-    use_convex_resources=false,
+    use_convex_resources=true,
     threshold,
 ) where {T}
     instance = create_instance(

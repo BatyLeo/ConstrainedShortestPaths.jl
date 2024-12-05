@@ -199,6 +199,56 @@ end
 """
 $TYPEDSIGNATURES
 
+Compute all paths below threshold.
+"""
+function generalized_a_star_with_threshold(
+    instance::ForwardCSPInstance, threshold::Float64; kwargs...
+)
+    (; graph, origin_vertex, destination_vertex, is_useful) = instance
+
+    empty_path = [origin_vertex]
+
+    forward_resources = Dict(empty_path => instance.origin_forward_resource)
+    L = PriorityQueue{Vector{Int},Float64}(
+        empty_path => instance.cost_function(forward_resources[empty_path])
+    )
+
+    c_star = Float64[]
+    p_star = Vector{Int}[]
+
+    while !isempty(L)
+        p = dequeue!(L)
+        v = p[end]
+        for w in outneighbors(graph, v)
+            if !is_useful[w]
+                continue
+            end
+            q = copy(p)
+            push!(q, w)
+            rp = forward_resources[p]
+            rq, is_feasible = instance.forward_functions[v, w](rp; kwargs...)
+            if !is_feasible
+                continue
+            end
+            forward_resources[q] = rq
+            c = instance.cost_function(rq)
+            if w == destination_vertex # if destination is reached
+                if c < threshold
+                    push!(p_star, copy(q))
+                    push!(c_star, c)
+                else # else add path to queue
+                    enqueue!(L, q => c)
+                end
+            end
+            # else, discard path (i.e. do nothing)
+        end
+    end
+    return (; p_star, c_star)
+end
+
+"""
+$TYPEDSIGNATURES
+
 Compute the shortest path of `instance`.
 """
 function generalized_constrained_shortest_path(instance::CSPInstance; kwargs...)
@@ -216,8 +266,14 @@ $TYPEDSIGNATURES
 Compute shortest path between first and last nodes of `instance`
 """
 function generalized_constrained_shortest_path_with_threshold(
-    instance::CSPInstance{T,G}, threshold::Float64; kwargs...
-) where {T,G<:AbstractGraph}
+    instance::CSPInstance, threshold::Float64; kwargs...
+)
     bounds = compute_bounds(instance; kwargs...)
     return generalized_a_star_with_threshold(instance, bounds, threshold; kwargs...)
+end
+
+function generalized_constrained_shortest_path_with_threshold(
+    instance::ForwardCSPInstance, threshold::Float64; kwargs...
+)
+    return generalized_a_star_with_threshold(instance, threshold; kwargs...)
 end
