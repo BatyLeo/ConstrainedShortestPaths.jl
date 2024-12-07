@@ -1,7 +1,7 @@
 name = "ConstrainedShortestPaths"
 uuid = "b3798467-87dc-4d99-943d-35a1bd39e395"
 authors = ["Léo Baty and contributors"]
-version = "0.6.1"
+version = "0.6.2"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -15,7 +15,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 DataStructures = "0.18"
 DocStringExtensions = "0.9"
 Graphs = "1"
-PiecewiseLinearFunctions = "0.4.3"
+PiecewiseLinearFunctions = "0.4.4"
 SparseArrays = "<0.0.1,1"
 Statistics = "<0.0.1,1"
 julia = "1.10"

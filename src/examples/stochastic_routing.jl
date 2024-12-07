@@ -73,7 +73,7 @@ end
 function Base.min(
     r1::StochasticBackwardResource{true}, r2::StochasticBackwardResource{true}
 )
-    new_g = fast_convex_meet.(r1.g, r2.g)
+    new_g = convex_meet.(r1.g, r2.g)
     # new_g = remove_redundant_breakpoints.(convex_meet.(r1.g, r2.g); atol=1e-8)
     return StochasticBackwardResource{true}(new_g)
 end
