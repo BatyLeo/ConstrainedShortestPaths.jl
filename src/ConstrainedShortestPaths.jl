@@ -14,7 +14,7 @@ using Graphs:
     outneighbors,
     induced_subgraph
 using PiecewiseLinearFunctions:
-    PiecewiseLinearFunction, convex_meet, remove_redundant_breakpoints, fast_convex_meet
+    PiecewiseLinearFunction, convex_meet, remove_redundant_breakpoints, convex_meet
 using SparseArrays: sparse
 using Statistics: mean
 
