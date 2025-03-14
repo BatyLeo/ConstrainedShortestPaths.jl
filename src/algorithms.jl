@@ -3,13 +3,13 @@ $TYPEDSIGNATURES
 
 Compute backward bounds of instance (see [Computing bounds](@ref)).
 """
-function compute_bounds(instance::CSPInstance; kwargs...)
+function compute_bounds(instance::CSPInstance{T,G,FR,BR}; kwargs...) where {T,G,FR,BR}
     (; graph, destination_vertex, topological_ordering, is_useful) = instance
 
     vertices_order = topological_ordering
     @assert vertices_order[1] == destination_vertex
 
-    bounds = Dict{Int,typeof(instance.destination_backward_resource)}()
+    bounds = Dict{Int,BR}()
     # bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nv(graph))
     bounds[destination_vertex] = instance.destination_backward_resource
 
@@ -30,7 +30,7 @@ $TYPEDSIGNATURES
 Perform generalized A star algorithm on instnace using bounds
 (see [Generalized `A^\\star`](@ref)).
 """
-function generalized_a_star(instance::CSPInstance, bounds; kwargs...)
+function generalized_a_star(instance::CSPInstance{T,G,FR}, bounds; kwargs...) where {T,G,FR}
     (; graph, origin_vertex, destination_vertex, is_useful) = instance
     nb_vertices = nv(graph)
 
@@ -42,8 +42,8 @@ function generalized_a_star(instance::CSPInstance, bounds; kwargs...)
             instance.cost_function(forward_resources[empty_path], bounds[origin_vertex]),
     )
 
-    forward_type = typeof(forward_resources[empty_path])
-    M = [forward_type[] for _ in 1:nb_vertices]
+    # forward_type = typeof(forward_resources[empty_path])
+    M = [FR[] for _ in 1:nb_vertices]
     push!(M[origin_vertex], forward_resources[empty_path])
     c_star = Inf
     p_star = [origin_vertex]
