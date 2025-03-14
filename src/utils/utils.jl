@@ -10,13 +10,6 @@ end
 # Remove all elements in Mw that are dominated by rq
 function remove_dominated!(Mw::AbstractVector{R}, rq::R) where {R}
     filter!(r -> !(rq <= r), Mw)
-    # to_delete = Int[]
-    # for (i, r) in enumerate(Mw)
-    #     if rq <= r
-    #         push!(to_delete, i)
-    #     end
-    # end
-    # deleteat!(Mw, to_delete)
     return nothing
 end
 

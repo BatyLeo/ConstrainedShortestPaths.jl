@@ -10,7 +10,6 @@ function compute_bounds(instance::CSPInstance{T,G,FR,BR}; kwargs...) where {T,G,
     @assert vertices_order[1] == destination_vertex
 
     bounds = Dict{Int,BR}()
-    # bounds = Vector{typeof(instance.destination_backward_resource)}(undef, nv(graph))
     bounds[destination_vertex] = instance.destination_backward_resource
 
     for vertex in vertices_order[2:end]
