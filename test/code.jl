@@ -7,9 +7,7 @@ end
 
 @testset "Correctness (JET.jl)" begin
     using JET
-    if VERSION >= v"1.8"
-        JET.test_package(ConstrainedShortestPaths; toplevel_logger=nothing, mode=:typo)
-    end
+    JET.test_package(ConstrainedShortestPaths; target_modules=[ConstrainedShortestPaths])
 end
 
 @testset "Formatting (JuliaFormatter.jl)" begin
