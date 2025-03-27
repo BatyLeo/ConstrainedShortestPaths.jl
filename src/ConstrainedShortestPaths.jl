@@ -12,6 +12,7 @@ using Graphs:
     dst,
     edges,
     outneighbors,
+    inneighbors,
     induced_subgraph
 using PiecewiseLinearFunctions:
     PiecewiseLinearFunction, convex_meet, remove_redundant_breakpoints, convex_meet

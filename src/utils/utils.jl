@@ -13,6 +13,22 @@ function remove_dominated!(Mw::AbstractVector{R}, rq::R) where {R}
     return nothing
 end
 
+function dfs(graph::G, v::T; out=true) where {T,G<:AbstractGraph{T}}
+    visited = falses(nv(graph))
+    stack = [v]
+    while !isempty(stack)
+        v = pop!(stack)
+        if visited[v]
+            continue
+        end
+        visited[v] = true
+        for w in (out ? outneighbors(graph, v) : inneighbors(graph, v))
+            push!(stack, w)
+        end
+    end
+    return visited
+end
+
 # Topological order computing
 function scan!(
     graph::G, vertex::T, order::Vector{T}, opened::BitVector
@@ -29,11 +45,19 @@ function scan!(
 end
 
 function topological_order(graph::G, s::T, t::T) where {T,G<:AbstractGraph{T}}
+    s_visited = dfs(graph, s; out=true)
+    t_visited = dfs(graph, t; out=false)
+    visited = s_visited .& t_visited
+
     order = Int[]
     opened = falses(nv(graph))
     scan!(graph, s, order, opened)
 
-    start = findfirst(x -> (x == t), order)  # Can we do smarter than that ?
-    @assert !isnothing(start)
-    return order[start:end]
+    res = [o for o in order if visited[o]]
+    @assert res[1] == t
+    return res
+
+    # start = findfirst(x -> (x == t), order)  # Can we do smarter than that ?
+    # @assert !isnothing(start)
+    # return order[start:end]
 end
