@@ -70,10 +70,15 @@ function CSPInstance(;
     cost_function,
     forward_functions,
     backward_functions=nothing,
+    topological_ordering=nothing,
 )
     @assert is_directed(graph) "`graph` must be a directed graph"
     @assert !is_cyclic(graph) "`graph` must be acyclic"
-    useful_vertices = topological_order(graph, origin_vertex, destination_vertex)
+    useful_vertices = if isnothing(topological_ordering)
+        topological_order(graph, origin_vertex, destination_vertex)
+    else
+        topological_ordering
+    end
     is_useful = falses(nv(graph))
     is_useful[useful_vertices] .= true
     if isnothing(destination_backward_resource) && isnothing(backward_functions)
