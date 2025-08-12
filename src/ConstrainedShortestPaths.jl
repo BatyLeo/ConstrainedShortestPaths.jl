@@ -1,6 +1,6 @@
 module ConstrainedShortestPaths
 
-using DataStructures: PriorityQueue, enqueue!, dequeue!, isempty, MutableLinkedList
+using DataStructures: PriorityQueue, enqueue!, dequeue!, isempty
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS, TYPEDSIGNATURES
 using Graphs:
     AbstractGraph,
