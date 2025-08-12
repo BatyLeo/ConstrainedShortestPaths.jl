@@ -32,7 +32,7 @@ function resource_PLNE(g, d, c, C)
     nodes = 1:nb_vertices
     interior = 2:(nb_vertices - 1)
 
-    @variable(model, y[i=nodes, j=nodes; has_edge(g, i, j)], Bin)
+    @variable(model, y[i in nodes, j in nodes; has_edge(g, i, j)], Bin)
 
     @objective(model, Min, sum(d[src, dst] * y[src, dst] for (; src, dst) in edges(g)))
 
