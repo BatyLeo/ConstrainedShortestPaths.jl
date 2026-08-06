@@ -6,3 +6,12 @@ GLPK = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+
+[compat]
+BenchmarkTools = "1.8.0"
+ConstrainedShortestPaths = "0.6.5"
+Documenter = "1.17.0"
+GLPK = "1.2.1"
+Graphs = "1.14.0"
+JuMP = "1.31.1"
+Literate = "2.21.0"
