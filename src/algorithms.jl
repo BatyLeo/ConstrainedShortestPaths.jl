@@ -51,7 +51,7 @@ function generalized_a_star(instance::CSPInstance{T,G,FR}, bounds; kwargs...) wh
     nb_cuts_with_dominance = 0
 
     while !isempty(L)
-        p = dequeue!(L)
+        p = popfirst!(L).first
         v = p[end]
         for w in outneighbors(graph, v)
             if !is_useful[w]
@@ -74,7 +74,7 @@ function generalized_a_star(instance::CSPInstance{T,G,FR}, bounds; kwargs...) wh
                 elseif !is_dominated(rq, M[w]) # else add path to queue if not dominated
                     remove_dominated!(M[w], rq)
                     push!(M[w], rq)
-                    enqueue!(L, q => c)
+                    push!(L, q => c)
                 else
                     nb_cuts_with_dominance += 1
                 end
@@ -111,7 +111,7 @@ function generalized_a_star(instance::ForwardCSPInstance; kwargs...)
     nb_cuts_with_dominance = 0
 
     while !isempty(L)
-        p = dequeue!(L)
+        p = popfirst!(L).first
         v = p[end]
         for w in outneighbors(graph, v)
             if !is_useful[w]
@@ -134,7 +134,7 @@ function generalized_a_star(instance::ForwardCSPInstance; kwargs...)
             elseif !is_dominated(rq, M[w]) # else add path to queue if not dominated
                 remove_dominated!(M[w], rq)
                 push!(M[w], rq)
-                enqueue!(L, q => c)
+                push!(L, q => c)
             else
                 nb_cuts_with_dominance += 1
             end
@@ -166,7 +166,7 @@ function generalized_a_star_with_threshold(
     p_star = Vector{Int}[]
 
     while !isempty(L)
-        p = dequeue!(L)
+        p = popfirst!(L).first
         v = p[end]
         for w in outneighbors(graph, v)
             if !is_useful[w]
@@ -186,7 +186,7 @@ function generalized_a_star_with_threshold(
                     push!(p_star, copy(q))
                     push!(c_star, c)
                 else # else add path to queue
-                    enqueue!(L, q => c)
+                    push!(L, q => c)
                 end
             end
             # else, discard path (i.e. do nothing)
@@ -216,7 +216,7 @@ function generalized_a_star_with_threshold(
     p_star = Vector{Int}[]
 
     while !isempty(L)
-        p = dequeue!(L)
+        p = popfirst!(L).first
         v = p[end]
         for w in outneighbors(graph, v)
             if !is_useful[w]
@@ -236,7 +236,7 @@ function generalized_a_star_with_threshold(
                     push!(p_star, copy(q))
                     push!(c_star, c)
                 else # else add path to queue
-                    enqueue!(L, q => c)
+                    push!(L, q => c)
                 end
             end
             # else, discard path (i.e. do nothing)
